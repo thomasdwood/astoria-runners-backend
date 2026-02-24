@@ -13,7 +13,7 @@ router.use(requireAuth);
 
 // Validation schemas for query params
 const listTemplatesQuerySchema = z.object({
-  category: z.string().optional(),
+  categoryId: z.coerce.number().int().positive().optional(),
 });
 
 const instancesQuerySchema = z.object({
@@ -48,9 +48,9 @@ router.get(
   '/',
   validateQuery(listTemplatesQuerySchema),
   asyncHandler(async (req, res) => {
-    const { category } = req.query;
+    const { categoryId } = req.query;
 
-    const filters = category ? { category: category as string } : undefined;
+    const filters = categoryId !== undefined ? { categoryId: Number(categoryId) } : undefined;
     const templates = await recurringService.listRecurringTemplates(filters);
 
     res.status(200).json({ templates });

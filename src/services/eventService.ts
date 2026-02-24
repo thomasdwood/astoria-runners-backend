@@ -2,7 +2,6 @@ import { eq, and, sql, gte, lte } from 'drizzle-orm';
 import { db } from '../config/database.js';
 import { events } from '../db/schema/events.js';
 import { routes } from '../db/schema/routes.js';
-import type { Event } from '../db/schema/events.js';
 import type { CreateEventInput, UpdateEventInput } from '../validation/events.js';
 import { notifyEventCreated, notifyEventUpdated, notifyEventDeleted } from './discordService.js';
 
@@ -23,16 +22,19 @@ export async function createEvent(data: CreateEventInput) {
     .values({
       routeId: data.routeId,
       startDateTime: data.startDateTime,
-      endLocation: data.endLocation,
+      startLocation: data.startLocation || null,
+      endLocation: data.endLocation || null,
       notes: data.notes,
     })
     .returning();
 
-  // Fetch with route data using relational query
+  // Fetch with route and nested category via relational query
   const eventWithRoute = await db.query.events.findFirst({
     where: eq(events.id, created.id),
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
   });
 
@@ -50,14 +52,16 @@ export async function getEventById(id: number) {
   const event = await db.query.events.findFirst({
     where: eq(events.id, id),
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
   });
 
   return event || null;
 }
 
-export async function listEvents(filters?: { category?: string; start?: Date; end?: Date }) {
+export async function listEvents(filters?: { categoryId?: number; start?: Date; end?: Date }) {
   const conditions = [];
 
   if (filters?.start) {
@@ -68,17 +72,21 @@ export async function listEvents(filters?: { category?: string; start?: Date; en
     conditions.push(lte(events.startDateTime, filters.end));
   }
 
-  // TODO(03.1-02): category filter by string will be implemented after categories API migration
-  // Category filtering via route.categoryId join deferred to service layer migration in 03.1-02
-
-  // Use relational query
+  // Use relational query to fetch events with route and nested category
   const results = await db.query.events.findMany({
     where: conditions.length > 0 ? and(...conditions) : undefined,
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
     orderBy: (events, { asc }) => [asc(events.startDateTime)],
   });
+
+  // Filter by categoryId in JS if requested
+  if (filters?.categoryId !== undefined) {
+    return results.filter((e) => e.route?.categoryId === filters.categoryId);
+  }
 
   return results;
 }
@@ -98,8 +106,11 @@ export async function updateEvent(id: number, data: UpdateEventInput) {
   if (fields.startDateTime !== undefined) {
     updateFields.startDateTime = fields.startDateTime;
   }
+  if (fields.startLocation !== undefined) {
+    updateFields.startLocation = fields.startLocation || null;
+  }
   if (fields.endLocation !== undefined) {
-    updateFields.endLocation = fields.endLocation;
+    updateFields.endLocation = fields.endLocation || null;
   }
   if (fields.notes !== undefined) {
     updateFields.notes = fields.notes;
@@ -125,11 +136,13 @@ export async function updateEvent(id: number, data: UpdateEventInput) {
     return { error: 'conflict' as const };
   }
 
-  // Fetch updated event with route data
+  // Fetch updated event with route and nested category
   const eventWithRoute = await db.query.events.findFirst({
     where: eq(events.id, updated.id),
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
   });
 
@@ -147,7 +160,11 @@ export async function deleteEvent(id: number) {
   // Fetch event with route before deleting (needed for Discord notification)
   const eventWithRoute = await db.query.events.findFirst({
     where: eq(events.id, id),
-    with: { route: true },
+    with: {
+      route: {
+        with: { category: true },
+      },
+    },
   });
 
   const [deleted] = await db

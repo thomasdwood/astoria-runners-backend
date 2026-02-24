@@ -1,50 +1,80 @@
 import { eq, and, sql } from 'drizzle-orm';
 import { db } from '../config/database.js';
 import { routes } from '../db/schema/routes.js';
-import type { Route } from '../db/schema/routes.js';
+import { categories } from '../db/schema/categories.js';
 import type { CreateRouteInput, UpdateRouteInput } from '../validation/routes.js';
 
-function formatRoute(row: Route) {
-  return {
-    ...row,
-    distance: Number(row.distance), // numeric column returns string, convert to number for API
-  };
-}
-
 export async function createRoute(data: CreateRouteInput) {
+  // Verify category FK exists
+  const [categoryExists] = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.id, data.categoryId))
+    .limit(1);
+
+  if (!categoryExists) {
+    return { error: 'category_not_found' as const };
+  }
+
   const [created] = await db
     .insert(routes)
     .values({
       name: data.name,
       distance: String(data.distance),
-      // TODO(03.1-02): categoryId will be looked up from data.category string after categories API is implemented
-      categoryId: 1, // placeholder - service layer migration in 03.1-02
-      endLocation: data.endLocation,
+      categoryId: data.categoryId,
+      startLocation: data.startLocation || null,
+      endLocation: data.endLocation || null,
     })
     .returning();
 
-  return formatRoute(created);
+  // Fetch with category via relational query
+  const routeWithCategory = await db.query.routes.findFirst({
+    where: eq(routes.id, created.id),
+    with: { category: true },
+  });
+
+  return formatRoute(routeWithCategory!);
 }
 
 export async function getRouteById(id: number) {
-  const [route] = await db
-    .select()
-    .from(routes)
-    .where(eq(routes.id, id))
-    .limit(1);
+  const route = await db.query.routes.findFirst({
+    where: eq(routes.id, id),
+    with: { category: true },
+  });
 
   return route ? formatRoute(route) : null;
 }
 
-export async function listRoutes(filters?: { category?: string }) {
-  // TODO(03.1-02): category filter by string will be implemented after categories API migration
-  // For now, return all routes (category filtering deferred to service layer migration in 03.1-02)
-  const results = await db.select().from(routes).orderBy(routes.name);
-  return results.map(formatRoute);
+export async function listRoutes(filters?: { categoryId?: number }) {
+  const results = await db.query.routes.findMany({
+    with: { category: true },
+    orderBy: (routes, { asc }) => [asc(routes.name)],
+  });
+
+  let filtered = results;
+
+  if (filters?.categoryId !== undefined) {
+    filtered = results.filter((r) => r.categoryId === filters.categoryId);
+  }
+
+  return filtered.map(formatRoute);
 }
 
 export async function updateRoute(id: number, data: UpdateRouteInput) {
   const { version, ...fields } = data;
+
+  // If categoryId is being updated, verify it exists
+  if (fields.categoryId !== undefined) {
+    const [categoryExists] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.id, fields.categoryId))
+      .limit(1);
+
+    if (!categoryExists) {
+      return { error: 'category_not_found' as const };
+    }
+  }
 
   // Build update object with only provided fields
   const updateFields: Record<string, unknown> = {
@@ -58,10 +88,14 @@ export async function updateRoute(id: number, data: UpdateRouteInput) {
   if (fields.distance !== undefined) {
     updateFields.distance = String(fields.distance);
   }
-  // TODO(03.1-02): category update by string will be implemented after categories API migration
-  // if (fields.category !== undefined) { updateFields.categoryId = ... }
+  if (fields.categoryId !== undefined) {
+    updateFields.categoryId = fields.categoryId;
+  }
+  if (fields.startLocation !== undefined) {
+    updateFields.startLocation = fields.startLocation || null;
+  }
   if (fields.endLocation !== undefined) {
-    updateFields.endLocation = fields.endLocation;
+    updateFields.endLocation = fields.endLocation || null;
   }
 
   const [updated] = await db
@@ -84,7 +118,13 @@ export async function updateRoute(id: number, data: UpdateRouteInput) {
     return { error: 'conflict' as const };
   }
 
-  return { route: formatRoute(updated) };
+  // Fetch updated route with category
+  const routeWithCategory = await db.query.routes.findFirst({
+    where: eq(routes.id, updated.id),
+    with: { category: true },
+  });
+
+  return { route: formatRoute(routeWithCategory!) };
 }
 
 export async function deleteRoute(id: number) {
@@ -98,4 +138,12 @@ export async function deleteRoute(id: number) {
   }
 
   return { success: true as const };
+}
+
+// Helper to normalize route response (distance as number, include category object)
+function formatRoute(row: { distance: string; [key: string]: unknown }) {
+  return {
+    ...row,
+    distance: Number(row.distance), // numeric column returns string, convert to number for API
+  };
 }

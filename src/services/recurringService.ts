@@ -1,12 +1,25 @@
 import { eq, and, sql } from 'drizzle-orm';
 import rrulePkg from 'rrule';
 const { RRule } = rrulePkg;
-import { addDays, setHours, setMinutes, startOfDay } from 'date-fns';
+import { addDays, setHours, setMinutes, startOfDay, format } from 'date-fns';
 import { db } from '../config/database.js';
 import { recurringTemplates } from '../db/schema/recurringTemplates.js';
 import { routes } from '../db/schema/routes.js';
 import { events } from '../db/schema/events.js';
 import type { CreateRecurringTemplateInput, UpdateRecurringTemplateInput } from '../validation/events.js';
+
+// Local constants for natural language formatting
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const ORDINALS: Record<number, string> = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', [-1]: 'last' };
+
+// Pattern object for recurrence rules
+export interface RecurrencePattern {
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;       // 0=Sun through 6=Sat
+  bySetPos?: number;       // 1-4 or -1 (last), only for monthly
+  startTime: string;       // HH:MM
+  endDate?: Date;          // optional until date
+}
 
 // Helper: Map JavaScript day of week (0=Sunday) to RRule weekday constants
 function dayOfWeekToRRuleDay(day: number) {
@@ -39,18 +52,74 @@ function computeDtstart(dayOfWeek: number, startTime: string): Date {
   return dtstart;
 }
 
-// Helper: Build RRULE string
-function buildRRule(dayOfWeek: number, startTime: string, count: number): string {
-  const dtstart = computeDtstart(dayOfWeek, startTime);
+// Helper: Build RRULE string from a RecurrencePattern object
+// NEVER includes count - use .between() for generation
+export function buildRRule(pattern: RecurrencePattern): string {
+  const dtstart = computeDtstart(pattern.dayOfWeek, pattern.startTime);
+  const day = dayOfWeekToRRuleDay(pattern.dayOfWeek);
 
-  const rule = new RRule({
-    freq: RRule.WEEKLY,
-    byweekday: [dayOfWeekToRRuleDay(dayOfWeek)],
-    dtstart: dtstart,
-    count: count,
-  });
+  let options: ConstructorParameters<typeof RRule>[0];
 
-  return rule.toString();
+  if (pattern.frequency === 'weekly') {
+    options = {
+      freq: RRule.WEEKLY,
+      byweekday: [day],
+      dtstart,
+    };
+  } else if (pattern.frequency === 'biweekly') {
+    options = {
+      freq: RRule.WEEKLY,
+      interval: 2,
+      byweekday: [day],
+      dtstart,
+    };
+  } else {
+    // monthly
+    options = {
+      freq: RRule.MONTHLY,
+      byweekday: [day],
+      bysetpos: [pattern.bySetPos!],
+      dtstart,
+    };
+  }
+
+  if (pattern.endDate) {
+    options.until = pattern.endDate;
+  }
+
+  return new RRule(options).toString();
+}
+
+// Helper: Produce natural language description of a recurrence pattern
+export function formatRecurrenceText(pattern: RecurrencePattern): string {
+  const dayName = DAY_NAMES[pattern.dayOfWeek];
+
+  if (pattern.frequency === 'weekly') {
+    return `Every ${dayName}`;
+  } else if (pattern.frequency === 'biweekly') {
+    return `Every other ${dayName}`;
+  } else {
+    // monthly
+    const ordinal = ORDINALS[pattern.bySetPos!] || `${pattern.bySetPos}th`;
+    return `Every ${ordinal} ${dayName} of the month`;
+  }
+}
+
+// Helper: Preview recurrence with natural language text and next 3 upcoming dates
+export function getRecurrencePreview(pattern: RecurrencePattern): { text: string; nextDates: string[] } {
+  const text = formatRecurrenceText(pattern);
+  const rruleString = buildRRule(pattern);
+  const rule = RRule.fromString(rruleString);
+
+  const now = new Date();
+  const ninetyDaysFromNow = addDays(now, 90);
+
+  const nextDates = rule
+    .between(now, ninetyDaysFromNow, true)
+    .slice(0, 3)
+    .map((d) => d.toISOString());
+
+  return { text, nextDates };
 }
 
 export async function createRecurringTemplate(data: CreateRecurringTemplateInput) {
@@ -65,8 +134,15 @@ export async function createRecurringTemplate(data: CreateRecurringTemplateInput
     return { error: 'route_not_found' as const };
   }
 
-  // Build RRULE string
-  const rruleString = buildRRule(data.dayOfWeek, data.startTime, data.count || 12);
+  // Build RRULE string using pattern-based approach (no count)
+  const pattern: RecurrencePattern = {
+    frequency: data.frequency || 'weekly',
+    dayOfWeek: data.dayOfWeek,
+    bySetPos: data.bySetPos ?? undefined,
+    startTime: data.startTime,
+    endDate: data.endDate ? new Date(data.endDate) : undefined,
+  };
+  const rruleString = buildRRule(pattern);
 
   const [created] = await db
     .insert(recurringTemplates)
@@ -75,6 +151,11 @@ export async function createRecurringTemplate(data: CreateRecurringTemplateInput
       rrule: rruleString,
       dayOfWeek: data.dayOfWeek,
       startTime: data.startTime,
+      frequency: data.frequency || 'weekly',
+      interval: data.interval || 1,
+      bySetPos: data.bySetPos ?? null,
+      endDate: data.endDate ? new Date(data.endDate) : null,
+      startLocation: data.startLocation,
       endLocation: data.endLocation,
       notes: data.notes,
     })
@@ -102,11 +183,13 @@ export async function getRecurringTemplateById(id: number) {
   return template || null;
 }
 
-export async function listRecurringTemplates(filters?: { category?: string }) {
+export async function listRecurringTemplates(filters?: { categoryId?: number }) {
   const results = await db.query.recurringTemplates.findMany({
     where: eq(recurringTemplates.isActive, true),
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
     orderBy: (recurringTemplates, { asc }) => [
       asc(recurringTemplates.dayOfWeek),
@@ -114,8 +197,10 @@ export async function listRecurringTemplates(filters?: { category?: string }) {
     ],
   });
 
-  // TODO(03.1-02): category filter by string will be implemented after categories API migration
-  // Category filtering via route.categoryId deferred to service layer migration in 03.1-02
+  // Filter by categoryId in JS if requested (route.categoryId FK join)
+  if (filters?.categoryId !== undefined) {
+    return results.filter((t) => t.route?.categoryId === filters.categoryId);
+  }
 
   return results;
 }
@@ -138,6 +223,21 @@ export async function updateRecurringTemplate(id: number, data: UpdateRecurringT
   if (fields.startTime !== undefined) {
     updateFields.startTime = fields.startTime;
   }
+  if (fields.frequency !== undefined) {
+    updateFields.frequency = fields.frequency;
+  }
+  if (fields.interval !== undefined) {
+    updateFields.interval = fields.interval;
+  }
+  if (fields.bySetPos !== undefined) {
+    updateFields.bySetPos = fields.bySetPos;
+  }
+  if (fields.endDate !== undefined) {
+    updateFields.endDate = fields.endDate ? new Date(fields.endDate) : null;
+  }
+  if (fields.startLocation !== undefined) {
+    updateFields.startLocation = fields.startLocation;
+  }
   if (fields.endLocation !== undefined) {
     updateFields.endLocation = fields.endLocation;
   }
@@ -145,9 +245,17 @@ export async function updateRecurringTemplate(id: number, data: UpdateRecurringT
     updateFields.notes = fields.notes;
   }
 
-  // If dayOfWeek or startTime changed, rebuild RRULE
-  if (fields.dayOfWeek !== undefined || fields.startTime !== undefined) {
-    // Fetch current template to get missing values
+  // Rebuild RRULE if any recurrence-affecting fields changed
+  const rruleFieldChanged =
+    fields.dayOfWeek !== undefined ||
+    fields.startTime !== undefined ||
+    fields.frequency !== undefined ||
+    fields.interval !== undefined ||
+    fields.bySetPos !== undefined ||
+    fields.endDate !== undefined;
+
+  if (rruleFieldChanged) {
+    // Fetch current template to fill missing values
     const [current] = await db
       .select()
       .from(recurringTemplates)
@@ -158,11 +266,23 @@ export async function updateRecurringTemplate(id: number, data: UpdateRecurringT
       return { error: 'not_found' as const };
     }
 
+    const newFrequency = (fields.frequency !== undefined ? fields.frequency : current.frequency) as 'weekly' | 'biweekly' | 'monthly';
     const newDayOfWeek = fields.dayOfWeek !== undefined ? fields.dayOfWeek : current.dayOfWeek;
     const newStartTime = fields.startTime !== undefined ? fields.startTime : current.startTime;
+    const newBySetPos = fields.bySetPos !== undefined ? (fields.bySetPos ?? undefined) : (current.bySetPos ?? undefined);
+    const newEndDate = fields.endDate !== undefined
+      ? (fields.endDate ? new Date(fields.endDate) : undefined)
+      : (current.endDate ? new Date(current.endDate) : undefined);
 
-    // Default count to 12 for rebuilt RRULEs
-    updateFields.rrule = buildRRule(newDayOfWeek, newStartTime, 12);
+    const pattern: RecurrencePattern = {
+      frequency: newFrequency,
+      dayOfWeek: newDayOfWeek,
+      bySetPos: newBySetPos,
+      startTime: newStartTime,
+      endDate: newEndDate,
+    };
+
+    updateFields.rrule = buildRRule(pattern);
   }
 
   const [updated] = await db
@@ -244,25 +364,42 @@ export async function getInstancesInRange(templateId: number, rangeStart: Date, 
     return [];
   }
 
+  // Parse excluded dates for filtering
+  let excludedDateStrings: Set<string> = new Set();
+  if (template.excludedDates) {
+    try {
+      const parsed = JSON.parse(template.excludedDates) as string[];
+      excludedDateStrings = new Set(parsed);
+    } catch {
+      // Invalid JSON - ignore excluded dates
+    }
+  }
+
   // Parse RRULE and generate occurrences
   const rule = RRule.fromString(template.rrule);
   const occurrences = rule.between(rangeStart, rangeEnd, true);
 
-  // Map to virtual event objects
-  return occurrences.map((date) => ({
-    recurringTemplateId: template.id,
-    routeId: template.routeId,
-    startDateTime: date,
-    endLocation: template.endLocation || null,
-    notes: template.notes || null,
-    route: template.route,
-  }));
+  // Filter out excluded dates and map to virtual event objects
+  return occurrences
+    .filter((date) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      return !excludedDateStrings.has(dateStr);
+    })
+    .map((date) => ({
+      recurringTemplateId: template.id,
+      routeId: template.routeId,
+      startDateTime: date,
+      startLocation: template.startLocation || null,
+      endLocation: template.endLocation || null,
+      notes: template.notes || null,
+      route: template.route,
+    }));
 }
 
 export async function getAllInstancesInRange(
   rangeStart: Date,
   rangeEnd: Date,
-  filters?: { category?: string }
+  filters?: { categoryId?: number }
 ) {
   // Load all active templates, optionally filtered by category
   const templates = await listRecurringTemplates(filters);
@@ -270,14 +407,32 @@ export async function getAllInstancesInRange(
   // Generate instances for each template
   const allInstances = [];
   for (const template of templates) {
+    // Parse excluded dates for filtering
+    let excludedDateStrings: Set<string> = new Set();
+    if (template.excludedDates) {
+      try {
+        const parsed = JSON.parse(template.excludedDates) as string[];
+        excludedDateStrings = new Set(parsed);
+      } catch {
+        // Invalid JSON - ignore excluded dates
+      }
+    }
+
     const rule = RRule.fromString(template.rrule);
     const occurrences = rule.between(rangeStart, rangeEnd, true);
 
     for (const date of occurrences) {
+      // Skip excluded (deleted) dates
+      const dateStr = format(date, 'yyyy-MM-dd');
+      if (excludedDateStrings.has(dateStr)) {
+        continue;
+      }
+
       allInstances.push({
         recurringTemplateId: template.id,
         routeId: template.routeId,
         startDateTime: date,
+        startLocation: template.startLocation || null,
         endLocation: template.endLocation || null,
         notes: template.notes || null,
         route: template.route,

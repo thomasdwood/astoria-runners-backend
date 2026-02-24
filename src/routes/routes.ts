@@ -18,21 +18,31 @@ router.post(
   '/',
   validateBody(createRouteSchema),
   asyncHandler(async (req, res) => {
-    const route = await routeService.createRoute(req.body);
-    res.status(201).json({ route });
+    const result = await routeService.createRoute(req.body);
+
+    if ('error' in result) {
+      if (result.error === 'category_not_found') {
+        res.status(422).json({ error: 'Category not found' });
+        return;
+      }
+    }
+
+    res.status(201).json({ route: result });
   })
 );
 
 /**
  * GET /
- * List all routes (optionally filtered by category)
+ * List all routes (optionally filtered by categoryId)
  */
 router.get(
   '/',
   validateQuery(listRoutesQuerySchema),
   asyncHandler(async (req, res) => {
-    const { category } = req.query;
-    const routes = await routeService.listRoutes(category ? { category: category as string } : undefined);
+    const { categoryId } = req.query;
+    const routes = await routeService.listRoutes(
+      categoryId !== undefined ? { categoryId: Number(categoryId) } : undefined
+    );
     res.status(200).json({ routes });
   })
 );
@@ -84,6 +94,10 @@ router.put(
     const result = await routeService.updateRoute(id, req.body);
 
     if ('error' in result) {
+      if (result.error === 'category_not_found') {
+        res.status(422).json({ error: 'Category not found' });
+        return;
+      }
       if (result.error === 'not_found') {
         res.status(404).json({ error: 'Route not found' });
         return;

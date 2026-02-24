@@ -17,7 +17,7 @@ import { formatInTimeZone } from 'date-fns-tz';
 export interface CalendarEvent {
   id: number | null; // null for virtual recurring instances
   title: string; // route name
-  category: string; // route category
+  category: { id: number; name: string; color: string; icon: string } | null; // route category object
   startDateTime: string; // ISO 8601 string
   displayDate: string; // "Mon, Feb 17, 2026"
   displayTime: string; // "6:30 PM"
@@ -61,7 +61,7 @@ export function formatEventForCalendar(
   return {
     id: event.id || null,
     title: event.route.name,
-    category: event.route.category,
+    category: event.route.category || null,
     startDateTime: startDateTime.toISOString(),
     displayDate: format(startDateTime, 'EEE, MMM d, yyyy'),
     displayTime: format(startDateTime, 'h:mm a'),

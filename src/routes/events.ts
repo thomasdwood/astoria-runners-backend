@@ -38,12 +38,12 @@ router.get(
   '/',
   validateQuery(listEventsQuerySchema),
   asyncHandler(async (req, res) => {
-    const { category, start, end } = req.query;
+    const { categoryId, start, end } = req.query;
 
-    const filters: { category?: string; start?: Date; end?: Date } = {};
+    const filters: { categoryId?: number; start?: Date; end?: Date } = {};
 
-    if (category) {
-      filters.category = category as string;
+    if (categoryId) {
+      filters.categoryId = Number(categoryId);
     }
     if (start) {
       filters.start = new Date(start as string);

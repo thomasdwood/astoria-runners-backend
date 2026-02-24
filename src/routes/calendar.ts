@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { startOfMonth, endOfMonth, addMonths, addDays } from 'date-fns';
+import { startOfMonth, endOfMonth, addMonths, addDays, format } from 'date-fns';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { validateQuery } from '../middleware/validate.js';
 import { calendarQuerySchema } from '../validation/events.js';
@@ -17,7 +17,7 @@ const router = Router();
 /**
  * GET /calendar
  * Public calendar endpoint - NO authentication required
- * Supports both month and list views with optional category filtering
+ * Supports both month and list views with optional categoryId filtering
  *
  * Query parameters:
  * - view: 'month' | 'list' (default: 'month')
@@ -25,7 +25,7 @@ const router = Router();
  * - month: number 1-12 (default: current month)
  * - start: ISO 8601 date string (for list view)
  * - end: ISO 8601 date string (for list view)
- * - category: route category filter (optional)
+ * - categoryId: category ID filter (optional)
  */
 router.get(
   '/',
@@ -37,7 +37,7 @@ router.get(
       month?: number;
       start?: string;
       end?: string;
-      category?: string;
+      categoryId?: number;
     };
 
     // Default to month view
@@ -62,21 +62,21 @@ router.get(
       const monthStart = startOfMonth(new Date(year, month - 1, 1));
       const monthEnd = endOfMonth(monthStart);
 
-      // Fetch one-off events in range
+      // Fetch one-off events in range (including cancelled for display)
       const dbEvents = await eventService.listEvents({
         start: monthStart,
         end: monthEnd,
-        category: query.category,
+        categoryId: query.categoryId,
       });
 
       // Fetch recurring instances in range
       const recurringInstances = await recurringService.getAllInstancesInRange(
         monthStart,
         monthEnd,
-        query.category ? { category: query.category } : undefined
+        query.categoryId ? { categoryId: query.categoryId } : undefined
       );
 
-      // Merge and deduplicate
+      // Merge and deduplicate (cancelled DB events override virtual instances)
       const mergedEvents = mergeAndSortEvents(dbEvents, recurringInstances);
 
       // Format all events for calendar display
@@ -114,21 +114,21 @@ router.get(
       const rangeStart = query.start ? new Date(query.start) : now;
       const rangeEnd = query.end ? new Date(query.end) : addDays(now, 30);
 
-      // Fetch one-off events in range
+      // Fetch one-off events in range (including cancelled for display)
       const dbEvents = await eventService.listEvents({
         start: rangeStart,
         end: rangeEnd,
-        category: query.category,
+        categoryId: query.categoryId,
       });
 
       // Fetch recurring instances in range
       const recurringInstances = await recurringService.getAllInstancesInRange(
         rangeStart,
         rangeEnd,
-        query.category ? { category: query.category } : undefined
+        query.categoryId ? { categoryId: query.categoryId } : undefined
       );
 
-      // Merge and deduplicate
+      // Merge and deduplicate (cancelled DB events override virtual instances)
       const mergedEvents = mergeAndSortEvents(dbEvents, recurringInstances);
 
       // Format all events for calendar display
