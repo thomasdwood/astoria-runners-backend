@@ -11,6 +11,7 @@ import { DashboardPage } from '@/pages/admin/dashboard-page';
 import { RoutesPage } from '@/pages/admin/routes-page';
 import { EventsPage } from '@/pages/admin/events-page';
 import { RecurringPage } from '@/pages/admin/recurring-page';
+import { SettingsPage } from '@/pages/admin/settings-page';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="routes" element={<RoutesPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="recurring" element={<RecurringPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -9,6 +9,7 @@ import {
   Repeat,
   LogOut,
   Calendar,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ const navItems = [
   { to: '/admin/routes', label: 'Routes', icon: MapPin },
   { to: '/admin/events', label: 'Events', icon: CalendarDays },
   { to: '/admin/recurring', label: 'Recurring', icon: Repeat },
+  { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AdminLayout() {
