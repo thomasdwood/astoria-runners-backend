@@ -17,10 +17,14 @@ import { formatInTimeZone } from 'date-fns-tz';
 export interface CalendarEvent {
   id: number | null; // null for virtual recurring instances
   title: string; // route name
-  category: { id: number; name: string; color: string; icon: string } | null; // route category object
+  category: string; // route category name (display string)
+  categoryColor: string; // category color key for CATEGORY_COLOR_MAP
+  categoryIcon: string; // category emoji icon
+  routeId: number; // route ID — needed for creating cancellation/exception events
   startDateTime: string; // ISO 8601 string
   displayDate: string; // "Mon, Feb 17, 2026"
   displayTime: string; // "6:30 PM"
+  startLocation: string | null;
   endLocation: string | null;
   notes: string | null;
   isRecurring: boolean; // true if from recurring template
@@ -59,13 +63,18 @@ export function formatEventForCalendar(
 ): CalendarEvent {
   const startDateTime = new Date(event.startDateTime);
 
+  const cat = event.route?.category ?? null;
   return {
     id: event.id || null,
     title: event.route.name,
-    category: event.route.category || null,
+    category: cat?.name ?? 'Uncategorized',
+    categoryColor: cat?.color ?? 'slate',
+    categoryIcon: cat?.icon ?? '',
+    routeId: event.routeId,
     startDateTime: startDateTime.toISOString(),
     displayDate: format(startDateTime, 'EEE, MMM d, yyyy'),
     displayTime: format(startDateTime, 'h:mm a'),
+    startLocation: event.startLocation || null,
     endLocation: event.endLocation || null,
     notes: event.notes || null,
     isRecurring: !!event.recurringTemplateId,

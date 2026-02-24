@@ -34,7 +34,7 @@ export function useEvent(id: number) {
 export function useCreateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string }) =>
+    mutationFn: (data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string; recurringTemplateId?: number }) =>
       api.post<{ event: Event }>('/api/events', {
         ...data,
         startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z'),
@@ -79,6 +79,46 @@ export function useUpdateMeetupStatus() {
       api.patch<{ event: Event }>(`/api/events/${id}/meetup-status`, { postedToMeetup }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+}
+
+export function useCancelRecurringInstance() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { routeId: number; startDateTime: string; recurringTemplateId: number; startLocation?: string | null; endLocation?: string | null; notes?: string | null }) =>
+      api.post<{ event: Event }>('/api/events', {
+        ...data,
+        isCancelled: true,
+        startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+export function useExcludeRecurringDate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ templateId, date }: { templateId: number; date: string }) =>
+      api.put(`/api/recurring-templates/${templateId}/exclude-date`, { date }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['recurring-templates'] });
+    },
+  });
+}
+
+export function useRestoreCancelledInstance() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/api/events/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });
 }

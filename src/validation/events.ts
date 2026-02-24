@@ -6,6 +6,8 @@ export const createEventSchema = z.object({
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional(),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
   notes: z.string().optional(),
+  isCancelled: z.boolean().optional(),
+  recurringTemplateId: z.number().int().positive().optional(),
 });
 
 export const updateEventSchema = z.object({

@@ -316,6 +316,46 @@ export async function updateRecurringTemplate(id: number, data: UpdateRecurringT
   return { template: templateWithRoute };
 }
 
+export async function excludeDateFromTemplate(templateId: number, date: string) {
+  // date should be in ISO date format (YYYY-MM-DD)
+  const [template] = await db
+    .select()
+    .from(recurringTemplates)
+    .where(eq(recurringTemplates.id, templateId))
+    .limit(1);
+
+  if (!template) {
+    return { error: 'not_found' as const };
+  }
+
+  // Parse existing excluded dates
+  let excludedList: string[] = [];
+  if (template.excludedDates) {
+    try {
+      excludedList = JSON.parse(template.excludedDates) as string[];
+    } catch {
+      excludedList = [];
+    }
+  }
+
+  // Add date if not already excluded
+  if (!excludedList.includes(date)) {
+    excludedList.push(date);
+  }
+
+  const [updated] = await db
+    .update(recurringTemplates)
+    .set({ excludedDates: JSON.stringify(excludedList), updatedAt: sql`NOW()` })
+    .where(eq(recurringTemplates.id, templateId))
+    .returning();
+
+  if (!updated) {
+    return { error: 'not_found' as const };
+  }
+
+  return { success: true as const };
+}
+
 export async function deleteRecurringTemplate(id: number) {
   // Check if any events reference this template
   const [referencingEvent] = await db

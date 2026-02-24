@@ -85,6 +85,7 @@ export interface CalendarEvent {
   category: string;
   categoryColor: string;
   categoryIcon: string;
+  routeId: number;
   startDateTime: string;
   displayDate: string;
   displayTime: string;

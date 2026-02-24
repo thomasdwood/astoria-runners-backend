@@ -135,6 +135,39 @@ router.get(
 );
 
 /**
+ * PUT /:id/exclude-date
+ * Add a date to the template's excluded dates (deletes that instance)
+ * Must be before /:id to avoid path conflict
+ */
+const excludeDateSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+});
+
+router.put(
+  '/:id/exclude-date',
+  validateBody(excludeDateSchema),
+  asyncHandler(async (req, res) => {
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid template ID' });
+      return;
+    }
+
+    const { date } = req.body as { date: string };
+    const result = await recurringService.excludeDateFromTemplate(id, date);
+
+    if ('error' in result) {
+      if (result.error === 'not_found') {
+        res.status(404).json({ error: 'Recurring template not found' });
+        return;
+      }
+    }
+
+    res.status(200).json({ success: true });
+  })
+);
+
+/**
  * PUT /:id
  * Update recurring template with optimistic locking
  */

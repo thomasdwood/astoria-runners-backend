@@ -25,6 +25,8 @@ export async function createEvent(data: CreateEventInput) {
       startLocation: data.startLocation || null,
       endLocation: data.endLocation || null,
       notes: data.notes,
+      isCancelled: data.isCancelled ?? false,
+      recurringTemplateId: data.recurringTemplateId ?? null,
     })
     .returning();
 
