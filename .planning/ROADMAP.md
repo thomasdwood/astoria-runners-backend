@@ -102,8 +102,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Discord webhook integration (service, env config, fire-and-forget event triggers)
-- [ ] 04-02-PLAN.md -- Meetup export template generation, postedToMeetup field, and REST endpoints
+- [ ] 04-01-PLAN.md -- Discord webhook updates (category colors, settings toggle, recurring template notifications, Phase 3.1 data model)
+- [ ] 04-02-PLAN.md -- Meetup export updates (stravaUrl on routes, format toggle, Popover UI, Phase 3.1 data model)
 
 ## Progress
 
