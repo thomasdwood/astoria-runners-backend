@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/use-categories';
-import { useDefaultStartLocation, useUpdateSetting } from '@/hooks/use-settings';
+import { useSettings, useUpdateSetting } from '@/hooks/use-settings';
 import { CategoryForm } from '@/components/categories/category-form';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -43,8 +44,13 @@ export function SettingsPage() {
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
 
-  const { data: defaultStartLocation, isLoading: settingsLoading } = useDefaultStartLocation();
+  const { data: settings, isLoading: settingsLoading } = useSettings();
   const updateSetting = useUpdateSetting();
+
+  const defaultStartLocation = settings?.find((s) => s.key === 'default_start_location')?.value ?? null;
+  const discordNotificationsRaw = settings?.find((s) => s.key === 'discord_notifications_enabled')?.value;
+  // Default to enabled (true) if setting doesn't exist
+  const discordNotificationsEnabled = discordNotificationsRaw !== 'false';
 
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
@@ -99,6 +105,15 @@ export function SettingsPage() {
       toast.success('Default start location saved');
     } catch {
       toast.error('Failed to save start location');
+    }
+  }
+
+  async function handleDiscordToggle(enabled: boolean) {
+    try {
+      await updateSetting.mutateAsync({ key: 'discord_notifications_enabled', value: enabled ? 'true' : 'false' });
+      toast.success(`Discord notifications ${enabled ? 'enabled' : 'disabled'}`);
+    } catch {
+      toast.error('Failed to update Discord notification setting');
     }
   }
 
@@ -209,6 +224,29 @@ export function SettingsPage() {
                 {updateSetting.isPending ? 'Saving...' : 'Save'}
               </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Discord Notifications Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Discord Notifications</CardTitle>
+          <CardDescription>
+            Post event announcements to Discord when events are created, updated, or deleted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <Switch
+              id="discordNotifications"
+              checked={discordNotificationsEnabled}
+              onCheckedChange={handleDiscordToggle}
+              disabled={settingsLoading || updateSetting.isPending}
+            />
+            <Label htmlFor="discordNotifications" className="cursor-pointer">
+              {discordNotificationsEnabled ? 'Enabled' : 'Disabled'}
+            </Label>
           </div>
         </CardContent>
       </Card>

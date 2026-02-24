@@ -7,6 +7,7 @@ import { recurringTemplates } from '../db/schema/recurringTemplates.js';
 import { routes } from '../db/schema/routes.js';
 import { events } from '../db/schema/events.js';
 import type { CreateRecurringTemplateInput, UpdateRecurringTemplateInput } from '../validation/events.js';
+import { notifyRecurringCreated, notifyRecurringDeleted } from './discordService.js';
 
 // Local constants for natural language formatting
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -146,13 +147,22 @@ export async function createRecurringTemplate(data: CreateRecurringTemplateInput
     })
     .returning();
 
-  // Fetch with route data using relational query
+  // Fetch with route and category data using relational query
   const templateWithRoute = await db.query.recurringTemplates.findFirst({
     where: eq(recurringTemplates.id, created.id),
     with: {
-      route: true,
+      route: {
+        with: { category: true },
+      },
     },
   });
+
+  // Fire and forget - don't block response on webhook
+  if (templateWithRoute) {
+    notifyRecurringCreated(templateWithRoute as any).catch(err => {
+      console.error('Discord notification failed (recurring create):', err);
+    });
+  }
 
   return templateWithRoute;
 }
@@ -342,6 +352,16 @@ export async function excludeDateFromTemplate(templateId: number, date: string) 
 }
 
 export async function deleteRecurringTemplate(id: number) {
+  // Fetch template with route and category before deletion (needed for Discord notification)
+  const templateWithRoute = await db.query.recurringTemplates.findFirst({
+    where: eq(recurringTemplates.id, id),
+    with: {
+      route: {
+        with: { category: true },
+      },
+    },
+  });
+
   // Check if any events reference this template
   const [referencingEvent] = await db
     .select()
@@ -361,6 +381,13 @@ export async function deleteRecurringTemplate(id: number) {
       return { error: 'not_found' as const };
     }
 
+    // Fire and forget - notify Discord about cancellation
+    if (templateWithRoute) {
+      notifyRecurringDeleted(templateWithRoute as any).catch(err => {
+        console.error('Discord notification failed (recurring delete):', err);
+      });
+    }
+
     return { success: true as const };
   }
 
@@ -372,6 +399,13 @@ export async function deleteRecurringTemplate(id: number) {
 
   if (!deleted) {
     return { error: 'not_found' as const };
+  }
+
+  // Fire and forget - notify Discord about cancellation
+  if (templateWithRoute) {
+    notifyRecurringDeleted(templateWithRoute as any).catch(err => {
+      console.error('Discord notification failed (recurring delete):', err);
+    });
   }
 
   return { success: true as const };
