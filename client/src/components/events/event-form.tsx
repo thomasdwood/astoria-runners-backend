@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,26 +13,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRoutes } from '@/hooks/use-routes';
-import type { Event } from '@/types';
-import { format } from 'date-fns';
+import { useLocationSuggestions, useDefaultStartLocation } from '@/hooks/use-settings';
+import { useCalendarList } from '@/hooks/use-calendar';
+import { useExcludeRecurringDate } from '@/hooks/use-events';
+import type { Event, CalendarEvent } from '@/types';
+import { format, startOfDay, endOfDay } from 'date-fns';
 
 const eventSchema = z.object({
   routeId: z.coerce.number().positive('Route is required'),
   startDateTime: z.string().min(1, 'Date/time is required'),
+  startLocation: z.string().max(200).optional(),
+  endLocation: z.string().max(200).optional(),
   notes: z.string().optional(),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
 
+function getTimeOfDayWindow(dateTime: string): 'morning' | 'afternoon' | 'evening' {
+  const hours = new Date(dateTime).getHours();
+  if (hours < 12) return 'morning';
+  if (hours < 17) return 'afternoon';
+  return 'evening';
+}
+
+interface InstanceDefaults {
+  routeId?: number;
+  startDateTime?: string;
+  notes?: string;
+  endLocation?: string;
+  startLocation?: string;
+}
+
 interface EventFormProps {
   event?: Event;
+  instanceDefaults?: InstanceDefaults;
   onSubmit: (data: EventFormData) => void;
   isSubmitting: boolean;
 }
 
-export function EventForm({ event, onSubmit, isSubmitting }: EventFormProps) {
+export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: EventFormProps) {
   const { data: routes } = useRoutes();
+  const { data: locationSuggestions } = useLocationSuggestions();
+  const { data: defaultStartLocation } = useDefaultStartLocation();
+  const excludeDate = useExcludeRecurringDate();
+
+  // Build default values: editing event > instance defaults > empty
+  const defaultValues: Partial<EventFormData> = event
+    ? {
+        routeId: event.routeId,
+        startDateTime: format(new Date(event.startDateTime), "yyyy-MM-dd'T'HH:mm"),
+        startLocation: event.startLocation ?? undefined,
+        endLocation: event.endLocation ?? undefined,
+        notes: event.notes ?? '',
+      }
+    : instanceDefaults
+    ? {
+        routeId: instanceDefaults.routeId,
+        startDateTime: instanceDefaults.startDateTime,
+        startLocation: instanceDefaults.startLocation ?? undefined,
+        endLocation: instanceDefaults.endLocation ?? undefined,
+        notes: instanceDefaults.notes ?? '',
+      }
+    : {
+        startLocation: defaultStartLocation ?? undefined,
+      };
 
   const {
     register,
@@ -41,57 +98,225 @@ export function EventForm({ event, onSubmit, isSubmitting }: EventFormProps) {
     formState: { errors },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
-    defaultValues: event
-      ? {
-          routeId: event.routeId,
-          startDateTime: format(new Date(event.startDateTime), "yyyy-MM-dd'T'HH:mm"),
-          notes: event.notes ?? '',
-        }
-      : {},
+    defaultValues,
   });
 
   const routeIdValue = watch('routeId');
+  const startDateTimeValue = watch('startDateTime');
+  const startLocationValue = watch('startLocation') ?? '';
+
+  const [startLocOpen, setStartLocOpen] = useState(false);
+
+  // Conflict detection state
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+  const [conflictInstance, setConflictInstance] = useState<CalendarEvent | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<EventFormData | null>(null);
+
+  // Date range for conflict check (single day based on selected datetime)
+  const [conflictCheckDate, setConflictCheckDate] = useState<{ start: string; end: string } | null>(null);
+
+  // Fetch calendar data for conflict check date (only when we have a date and it's a new event)
+  const { data: conflictCalendarData } = useCalendarList(
+    conflictCheckDate
+      ? { start: conflictCheckDate.start, end: conflictCheckDate.end }
+      : { start: undefined, end: undefined }
+  );
+
+  // Update conflict check date whenever startDateTime changes (only for new events)
+  useEffect(() => {
+    if (!event && startDateTimeValue) {
+      const dt = new Date(startDateTimeValue);
+      if (!isNaN(dt.getTime())) {
+        setConflictCheckDate({
+          start: startOfDay(dt).toISOString(),
+          end: endOfDay(dt).toISOString(),
+        });
+      }
+    }
+  }, [startDateTimeValue, event]);
+
+  const filteredSuggestions = (locationSuggestions ?? []).filter(
+    (s) => s.toLowerCase().includes(startLocationValue.toLowerCase()) && s !== startLocationValue
+  );
+
+  function buildFinalData(data: EventFormData): EventFormData {
+    return {
+      ...data,
+      endLocation: data.endLocation || data.startLocation || undefined,
+    };
+  }
+
+  function findConflict(data: EventFormData): CalendarEvent | null {
+    if (!conflictCalendarData?.events || event) return null;
+
+    const window = getTimeOfDayWindow(data.startDateTime);
+    const conflicts = conflictCalendarData.events.filter((ce) => {
+      if (!ce.isRecurring || ce.isCancelled) return false;
+      return getTimeOfDayWindow(ce.startDateTime) === window;
+    });
+
+    return conflicts[0] ?? null;
+  }
+
+  function handleFormSubmit(data: EventFormData) {
+    const finalData = buildFinalData(data);
+
+    // Only check conflicts for new events (not edits or instance edits)
+    if (!event && !instanceDefaults) {
+      const conflict = findConflict(finalData);
+      if (conflict) {
+        setConflictInstance(conflict);
+        setPendingFormData(finalData);
+        setConflictDialogOpen(true);
+        return;
+      }
+    }
+
+    onSubmit(finalData);
+  }
+
+  async function handleConflictReplace() {
+    if (!conflictInstance || !pendingFormData) return;
+    setConflictDialogOpen(false);
+
+    try {
+      if (conflictInstance.recurringTemplateId) {
+        const dateStr = format(new Date(conflictInstance.startDateTime), 'yyyy-MM-dd');
+        await excludeDate.mutateAsync({ templateId: conflictInstance.recurringTemplateId, date: dateStr });
+      }
+    } catch {
+      // Non-blocking: continue with event creation even if exclude fails
+    }
+
+    onSubmit(pendingFormData);
+    setPendingFormData(null);
+    setConflictInstance(null);
+  }
+
+  function handleConflictKeepBoth() {
+    setConflictDialogOpen(false);
+    if (pendingFormData) {
+      onSubmit(pendingFormData);
+    }
+    setPendingFormData(null);
+    setConflictInstance(null);
+  }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Route</Label>
-        <Select
-          value={routeIdValue ? String(routeIdValue) : ''}
-          onValueChange={(val) => setValue('routeId', Number(val))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a route" />
-          </SelectTrigger>
-          <SelectContent>
-            {routes?.map((route) => (
-              <SelectItem key={route.id} value={String(route.id)}>
-                {route.name} ({route.distance} mi)
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.routeId && <p className="text-sm text-destructive">{errors.routeId.message}</p>}
-      </div>
+    <>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label>Route</Label>
+          <Select
+            value={routeIdValue ? String(routeIdValue) : ''}
+            onValueChange={(val) => setValue('routeId', Number(val))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a route" />
+            </SelectTrigger>
+            <SelectContent>
+              {routes?.map((route) => (
+                <SelectItem key={route.id} value={String(route.id)}>
+                  {route.name} ({route.distance} mi)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.routeId && <p className="text-sm text-destructive">{errors.routeId.message}</p>}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="startDateTime">Date & Time</Label>
-        <Input id="startDateTime" type="datetime-local" {...register('startDateTime')} />
-        {errors.startDateTime && (
-          <p className="text-sm text-destructive">{errors.startDateTime.message}</p>
-        )}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="startDateTime">Date & Time</Label>
+          <Input id="startDateTime" type="datetime-local" {...register('startDateTime')} />
+          {errors.startDateTime && (
+            <p className="text-sm text-destructive">{errors.startDateTime.message}</p>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Textarea id="notes" {...register('notes')} />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="startLocation">Start Location</Label>
+          <Popover open={startLocOpen && filteredSuggestions.length > 0} onOpenChange={setStartLocOpen}>
+            <PopoverTrigger asChild>
+              <Input
+                id="startLocation"
+                {...register('startLocation')}
+                onFocus={() => setStartLocOpen(true)}
+                onChange={(e) => {
+                  register('startLocation').onChange(e);
+                  setStartLocOpen(true);
+                }}
+                autoComplete="off"
+              />
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-[var(--radix-popover-trigger-width)]"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              {filteredSuggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                  onClick={() => {
+                    setValue('startLocation', s);
+                    setStartLocOpen(false);
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+          {errors.startLocation && (
+            <p className="text-sm text-destructive">{errors.startLocation.message}</p>
+          )}
+        </div>
 
-      <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : event ? 'Update Event' : 'Create Event'}
-        </Button>
-      </div>
-    </form>
+        <div className="space-y-2">
+          <Label htmlFor="endLocation">End Location <span className="text-muted-foreground text-xs">(optional — defaults to start location)</span></Label>
+          <Input id="endLocation" {...register('endLocation')} />
+          {errors.endLocation && (
+            <p className="text-sm text-destructive">{errors.endLocation.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notes (optional)</Label>
+          <Textarea id="notes" {...register('notes')} />
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button type="submit" disabled={isSubmitting || excludeDate.isPending}>
+            {isSubmitting ? 'Saving...' : event ? 'Update Event' : instanceDefaults ? 'Save as One-off' : 'Create Event'}
+          </Button>
+        </div>
+      </form>
+
+      {/* Conflict detection dialog */}
+      <AlertDialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Schedule Conflict</AlertDialogTitle>
+            <AlertDialogDescription>
+              A recurring event ({conflictInstance?.title ?? 'unknown'}) is already scheduled for{' '}
+              {conflictInstance ? format(new Date(conflictInstance.startDateTime), 'h:mm a') : ''} on this date.
+              <br /><br />
+              Would you like to replace it or keep both?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setConflictDialogOpen(false); setPendingFormData(null); setConflictInstance(null); }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction className="bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={handleConflictKeepBoth}>
+              Keep Both
+            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConflictReplace}>
+              Replace
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

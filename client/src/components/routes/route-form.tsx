@@ -1,9 +1,20 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useCategories } from '@/hooks/use-categories';
+import { useLocationSuggestions, useDefaultStartLocation } from '@/hooks/use-settings';
 import type { Route } from '@/types';
 
 const routeSchema = z.object({
@@ -23,16 +34,39 @@ interface RouteFormProps {
 }
 
 export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
+  const { data: categories } = useCategories();
+  const { data: locationSuggestions } = useLocationSuggestions();
+  const { data: defaultStartLocation } = useDefaultStartLocation();
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RouteFormData>({
     resolver: zodResolver(routeSchema),
     defaultValues: route
-      ? { name: route.name, distance: route.distance, categoryId: route.categoryId, startLocation: route.startLocation ?? undefined, endLocation: route.endLocation ?? undefined }
-      : {},
+      ? {
+          name: route.name,
+          distance: route.distance,
+          categoryId: route.categoryId,
+          startLocation: route.startLocation ?? undefined,
+          endLocation: route.endLocation ?? undefined,
+        }
+      : {
+          startLocation: defaultStartLocation ?? undefined,
+        },
   });
+
+  const categoryIdValue = watch('categoryId');
+  const startLocationValue = watch('startLocation') ?? '';
+
+  const [startLocOpen, setStartLocOpen] = useState(false);
+
+  const filteredSuggestions = (locationSuggestions ?? []).filter(
+    (s) => s.toLowerCase().includes(startLocationValue.toLowerCase()) && s !== startLocationValue
+  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -49,21 +83,68 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="categoryId">Category ID</Label>
-        <Input id="categoryId" type="number" {...register('categoryId', { valueAsNumber: true })} />
-        {errors.categoryId && <p className="text-sm text-destructive">{errors.categoryId.message}</p>}
+        <Label>Category</Label>
+        <Select
+          value={categoryIdValue ? String(categoryIdValue) : ''}
+          onValueChange={(val) => setValue('categoryId', Number(val))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories?.map((cat) => (
+              <SelectItem key={cat.id} value={String(cat.id)}>
+                {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.categoryId && (
+          <p className="text-sm text-destructive">{errors.categoryId.message}</p>
+        )}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="startLocation">Start Location</Label>
-        <Input id="startLocation" {...register('startLocation')} />
+        <Popover open={startLocOpen && filteredSuggestions.length > 0} onOpenChange={setStartLocOpen}>
+          <PopoverTrigger asChild>
+            <Input
+              id="startLocation"
+              {...register('startLocation')}
+              onFocus={() => setStartLocOpen(true)}
+              onChange={(e) => {
+                register('startLocation').onChange(e);
+                setStartLocOpen(true);
+              }}
+              autoComplete="off"
+            />
+          </PopoverTrigger>
+          <PopoverContent
+            className="p-0 w-[var(--radix-popover-trigger-width)]"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
+            {filteredSuggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                onClick={() => {
+                  setValue('startLocation', s);
+                  setStartLocOpen(false);
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
         {errors.startLocation && (
           <p className="text-sm text-destructive">{errors.startLocation.message}</p>
         )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="endLocation">End Location</Label>
+        <Label htmlFor="endLocation">End Location <span className="text-muted-foreground text-xs">(optional)</span></Label>
         <Input id="endLocation" {...register('endLocation')} />
         {errors.endLocation && (
           <p className="text-sm text-destructive">{errors.endLocation.message}</p>

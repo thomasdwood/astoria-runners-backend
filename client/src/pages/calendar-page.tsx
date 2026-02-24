@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCalendarMonth, useCalendarList } from '@/hooks/use-calendar';
+import { useCategories } from '@/hooks/use-categories';
 import { MonthGrid } from '@/components/calendar/month-grid';
 import { ListView } from '@/components/calendar/list-view';
 import { CategoryFilter } from '@/components/calendar/category-filter';
@@ -23,6 +24,7 @@ export function CalendarPage() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [categoryId, setCategoryId] = useState<number | undefined>();
   const isMobile = useIsMobile();
+  const { data: categories } = useCategories();
   const [view, setView] = useState<string>(isMobile ? 'list' : 'month');
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export function CalendarPage() {
         </Tabs>
       </div>
 
-      <CategoryFilter categories={[]} selected={categoryId} onSelect={setCategoryId} />
+      <CategoryFilter categories={categories ?? []} selected={categoryId} onSelect={setCategoryId} />
 
       {view === 'month' ? (
         <div className="space-y-4">

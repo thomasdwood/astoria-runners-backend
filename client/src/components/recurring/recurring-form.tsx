@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,8 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRoutes } from '@/hooks/use-routes';
+import { useLocationSuggestions } from '@/hooks/use-settings';
+import { useRecurrencePreview } from '@/hooks/use-recurring';
 import { DAY_NAMES, ORDINALS } from '@/lib/constants';
+import { format } from 'date-fns';
 import type { RecurringTemplate } from '@/types';
 
 const recurringSchema = z.object({
@@ -38,6 +43,7 @@ interface RecurringFormProps {
 
 export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFormProps) {
   const { data: routes } = useRoutes();
+  const { data: locationSuggestions } = useLocationSuggestions();
 
   const {
     register,
@@ -65,6 +71,30 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
   const routeIdValue = watch('routeId');
   const dayValue = watch('dayOfWeek');
   const frequencyValue = watch('frequency');
+  const bySetPosValue = watch('bySetPos');
+  const startTimeValue = watch('startTime');
+  const endDateValue = watch('endDate');
+  const startLocationValue = watch('startLocation') ?? '';
+
+  const [startLocOpen, setStartLocOpen] = useState(false);
+
+  const filteredSuggestions = (locationSuggestions ?? []).filter(
+    (s) => s.toLowerCase().includes(startLocationValue.toLowerCase()) && s !== startLocationValue
+  );
+
+  // Build preview pattern when we have enough data
+  const previewPattern =
+    frequencyValue && dayValue !== undefined && startTimeValue
+      ? {
+          frequency: frequencyValue,
+          dayOfWeek: Number(dayValue),
+          bySetPos: frequencyValue === 'monthly' ? (bySetPosValue ?? null) : null,
+          startTime: startTimeValue,
+          endDate: endDateValue ?? null,
+        }
+      : null;
+
+  const { data: preview } = useRecurrencePreview(previewPattern);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -99,7 +129,7 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="biweekly">Every other week</SelectItem>
+            <SelectItem value="biweekly">Every Other Week (Biweekly)</SelectItem>
             <SelectItem value="monthly">Monthly (nth weekday)</SelectItem>
           </SelectContent>
         </Select>
@@ -129,7 +159,7 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
         <div className="space-y-2">
           <Label>Week of Month</Label>
           <Select
-            value={String(watch('bySetPos') ?? '')}
+            value={String(bySetPosValue ?? '')}
             onValueChange={(val) => setValue('bySetPos', val ? Number(val) : null)}
           >
             <SelectTrigger>
@@ -143,6 +173,21 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
               ))}
             </SelectContent>
           </Select>
+        </div>
+      )}
+
+      {/* Natural language preview */}
+      {preview && (
+        <div className="rounded-md bg-muted px-4 py-3 space-y-2">
+          <p className="text-sm font-semibold">{preview.text}</p>
+          {preview.nextDates.length > 0 && (
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <p className="font-medium">Next dates:</p>
+              {preview.nextDates.map((d) => (
+                <p key={d}>{format(new Date(d), 'EEEE, MMMM d, yyyy')}</p>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -161,7 +206,38 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
 
       <div className="space-y-2">
         <Label htmlFor="startLocation">Start Location (optional)</Label>
-        <Input id="startLocation" {...register('startLocation')} />
+        <Popover open={startLocOpen && filteredSuggestions.length > 0} onOpenChange={setStartLocOpen}>
+          <PopoverTrigger asChild>
+            <Input
+              id="startLocation"
+              {...register('startLocation')}
+              onFocus={() => setStartLocOpen(true)}
+              onChange={(e) => {
+                register('startLocation').onChange(e);
+                setStartLocOpen(true);
+              }}
+              autoComplete="off"
+            />
+          </PopoverTrigger>
+          <PopoverContent
+            className="p-0 w-[var(--radix-popover-trigger-width)]"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
+            {filteredSuggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                onClick={() => {
+                  setValue('startLocation', s);
+                  setStartLocOpen(false);
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-2">
