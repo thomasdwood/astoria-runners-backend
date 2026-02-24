@@ -73,6 +73,20 @@ Plans:
 - [ ] 03-02-PLAN.md -- Event and recurring template REST endpoints with auth protection, seed data
 - [ ] 03-03-PLAN.md -- Public calendar endpoints (month grid and chronological list views, no auth required)
 
+### Phase 03.1: Refinements & Missing Features (INSERTED)
+
+**Goal:** Address accumulated TODOs: replace hardcoded route categories with admin-defined categories (new categories table, CRUD API, admin UI), add startLocation field to routes/events with configurable default setting, show recurring event instances on the events admin page, and support complex recurring patterns (nth-weekday like 2nd Wednesday, last Thursday) using RRule bysetpos.
+**Depends on:** Phase 3
+**Plans:** 6 plans
+
+Plans:
+- [ ] 03.1-01-PLAN.md — Database schema foundation: categories table, settings table, route/event/recurring schema updates
+- [ ] 03.1-02-PLAN.md — Categories & settings API, route/event API updates for categoryId and startLocation
+- [ ] 03.1-03-PLAN.md — Complex recurring patterns: biweekly, monthly nth-weekday, natural language preview
+- [ ] 03.1-04-PLAN.md — Frontend types, hooks, and CategoryBadge updates for new data model
+- [ ] 03.1-05-PLAN.md — Admin settings page (categories + default start location), updated forms
+- [ ] 03.1-06-PLAN.md — Recurring instances on events page, cancel/delete/edit actions, conflict detection
+
 ### Phase 4: Integrations & Export
 **Goal**: Automated Discord announcements and Meetup export workflow
 **Depends on**: Phase 3
