@@ -168,16 +168,22 @@ None yet.
 **From Phase 1 Plan 3:**
 - Runtime verification deferred: Seed script execution, database queries, all 8 curl integration tests, complete authentication flow checkpoint not yet executed — comprehensive end-to-end testing deferred until Docker environment available
 
+### Pending Todos (from UAT)
+
+- Expose cancel/restore actions for one-off events (not just recurring instances)
+- Meetup description generation should apply to recurring instances too (decide in future phase)
+- DB migration state needs cleanup — schema was applied manually, not via drizzle migrations
+
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 03.1-06-PLAN.md (Recurring instance management, public calendar cancelled display, conflict detection)
-Next step: Phase 3.1 COMPLETE — all 6 plans done
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-06-SUMMARY.md
+Stopped at: Phase 3.1 UAT complete (16 passed, 1 skipped) + bug fixes committed. All features verified working.
+Next step: Phase 3.1 DONE. Ready for next phase or milestone wrap-up.
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-UAT.md
 
 **Verification Status:**
-- ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
-- ⏳ Runtime verification pending (waiting for Mac Mini hardware)
+- ✅ UAT complete: 16/18 passed, 1 skipped (cancel→restore dependency), 0 open issues
+- ✅ All discovered bugs fixed and committed
 
 ---
 *State initialized: 2026-02-12*
