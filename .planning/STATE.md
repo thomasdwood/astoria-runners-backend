@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 3.1 of 4 (Refinements & Missing Features)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In Progress
-Last activity: 2026-02-24 — Completed 03.1-04-PLAN.md (Frontend data layer: types, hooks, dynamic CategoryBadge, call site migration)
+Last activity: 2026-02-24 — Completed 03.1-05-PLAN.md (Admin settings page, updated forms with dynamic categories/startLocation/recurring preview)
 
-Progress: [██████████] Phase 3.1 in progress (3/3 plans complete)
+Progress: [██████████] Phase 3.1 in progress (4/4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 3 min
 - Total execution time: 0.5 hours
 
@@ -41,6 +41,7 @@ Progress: [██████████] Phase 3.1 in progress (3/3 plans comp
 | Phase 03.1-refinements-missing-features P02 | 4 | 2 tasks | 16 files |
 | Phase 03.1-refinements-missing-features P03 | 8 | 2 tasks | 7 files |
 | Phase 03.1-refinements-missing-features P04 | 4 | 2 tasks | 15 files |
+| Phase 03.1-refinements-missing-features P05 | 6 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -128,6 +129,10 @@ Recent decisions affecting current work:
 - [Phase 03.1-03]: isCancelled: false for virtual recurring instances; propagated from DB for materialized events
 - [Phase 03.1-04]: CATEGORY_COLOR_MAP keyed by color name string for Tailwind static class safety; CalendarEvent.category stays as display string with separate categoryColor/categoryIcon fields
 - [Phase 03.1-04]: CategoryFilter changed from hardcoded ALL_CATEGORIES to Category[] prop — caller fetches and passes categories from API
+- [Phase 03.1-05]: CategoryForm uses color Select dropdown (not HTML color input) — matches AVAILABLE_COLORS static list, shows Tailwind dot previews
+- [Phase 03.1-05]: Autocomplete Popover on startLocation inputs — Radix Popover already installed, no new dependency
+- [Phase 03.1-05]: endLocation auto-copy done client-side in EventForm's handleFormSubmit, not server/API layer — keeps API contract clean
+- [Phase 03.1-05]: RecurrencePreview query enabled only when frequency + dayOfWeek + startTime are populated — avoids incomplete API calls
 
 ### Pending Todos
 
@@ -161,9 +166,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 03.1-04-PLAN.md (Frontend types, hooks, dynamic CategoryBadge)
-Next step: Phase 3.1 Plan 05+ — admin UI for categories and settings, calendar page updates
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-04-SUMMARY.md
+Stopped at: Completed 03.1-05-PLAN.md (Admin settings page, updated forms, dynamic calendar filter)
+Next step: Phase 3.1 Plan 06 — remaining refinements
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-05-SUMMARY.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
