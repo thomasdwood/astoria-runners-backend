@@ -66,8 +66,13 @@ export function RecurringPage() {
 
   async function handleSubmit(data: {
     routeId: number;
+    frequency: 'weekly' | 'biweekly' | 'monthly';
+    interval?: number;
     dayOfWeek: number;
+    bySetPos?: number | null;
     startTime: string;
+    endDate?: string | null;
+    startLocation?: string;
     endLocation?: string;
     notes?: string;
   }) {

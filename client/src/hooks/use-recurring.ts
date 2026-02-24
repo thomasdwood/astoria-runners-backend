@@ -31,16 +31,50 @@ export function useRecurringInstances(id: number, start: string, end: string) {
   });
 }
 
+export interface RecurrencePatternInput {
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  dayOfWeek: number;
+  bySetPos?: number | null;
+  startTime: string;
+  endDate?: string | null;
+}
+
+export function useRecurrencePreview(pattern: RecurrencePatternInput | null) {
+  const isValid = pattern !== null && pattern.dayOfWeek >= 0 && pattern.startTime.length > 0;
+  const params = pattern
+    ? new URLSearchParams({
+        frequency: pattern.frequency,
+        dayOfWeek: String(pattern.dayOfWeek),
+        startTime: pattern.startTime,
+        ...(pattern.bySetPos != null ? { bySetPos: String(pattern.bySetPos) } : {}),
+        ...(pattern.endDate ? { endDate: pattern.endDate } : {}),
+      })
+    : null;
+
+  return useQuery({
+    queryKey: ['recurrence-preview', pattern],
+    queryFn: () =>
+      api.get<{ text: string; nextDates: string[] }>(
+        `/api/recurring-templates/preview?${params!.toString()}`
+      ),
+    enabled: isValid,
+  });
+}
+
 export function useCreateRecurringTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
       routeId: number;
+      frequency: 'weekly' | 'biweekly' | 'monthly';
+      interval?: number;
       dayOfWeek: number;
+      bySetPos?: number | null;
       startTime: string;
+      endDate?: string | null;
+      startLocation?: string;
       endLocation?: string;
       notes?: string;
-      count?: number;
     }) => api.post<{ template: RecurringTemplate }>('/api/recurring-templates', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring-templates'] });
@@ -59,8 +93,13 @@ export function useUpdateRecurringTemplate() {
       id: number;
       version: number;
       routeId?: number;
+      frequency?: 'weekly' | 'biweekly' | 'monthly';
+      interval?: number;
       dayOfWeek?: number;
+      bySetPos?: number | null;
       startTime?: string;
+      endDate?: string | null;
+      startLocation?: string;
       endLocation?: string;
       notes?: string;
     }) => api.put<{ template: RecurringTemplate }>(`/api/recurring-templates/${id}`, data),

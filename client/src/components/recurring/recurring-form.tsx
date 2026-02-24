@@ -13,13 +13,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useRoutes } from '@/hooks/use-routes';
-import { DAY_NAMES } from '@/lib/constants';
+import { DAY_NAMES, ORDINALS } from '@/lib/constants';
 import type { RecurringTemplate } from '@/types';
 
 const recurringSchema = z.object({
   routeId: z.coerce.number().positive('Route is required'),
+  frequency: z.enum(['weekly', 'biweekly', 'monthly']),
   dayOfWeek: z.coerce.number().min(0).max(6),
+  bySetPos: z.coerce.number().optional().nullable(),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM format'),
+  endDate: z.string().optional().nullable(),
+  startLocation: z.string().max(200).optional(),
   endLocation: z.string().max(200).optional(),
   notes: z.string().optional(),
 });
@@ -46,16 +50,21 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
     defaultValues: template
       ? {
           routeId: template.routeId,
+          frequency: template.frequency,
           dayOfWeek: template.dayOfWeek,
+          bySetPos: template.bySetPos,
           startTime: template.startTime,
+          endDate: template.endDate,
+          startLocation: template.startLocation ?? '',
           endLocation: template.endLocation ?? '',
           notes: template.notes ?? '',
         }
-      : { dayOfWeek: 2, startTime: '18:30' },
+      : { frequency: 'weekly', dayOfWeek: 2, startTime: '18:30' },
   });
 
   const routeIdValue = watch('routeId');
   const dayValue = watch('dayOfWeek');
+  const frequencyValue = watch('frequency');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -80,6 +89,23 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
       </div>
 
       <div className="space-y-2">
+        <Label>Frequency</Label>
+        <Select
+          value={frequencyValue ?? 'weekly'}
+          onValueChange={(val) => setValue('frequency', val as 'weekly' | 'biweekly' | 'monthly')}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="weekly">Weekly</SelectItem>
+            <SelectItem value="biweekly">Every other week</SelectItem>
+            <SelectItem value="monthly">Monthly (nth weekday)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label>Day of Week</Label>
         <Select
           value={String(dayValue ?? 2)}
@@ -99,12 +125,43 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
         {errors.dayOfWeek && <p className="text-sm text-destructive">{errors.dayOfWeek.message}</p>}
       </div>
 
+      {frequencyValue === 'monthly' && (
+        <div className="space-y-2">
+          <Label>Week of Month</Label>
+          <Select
+            value={String(watch('bySetPos') ?? '')}
+            onValueChange={(val) => setValue('bySetPos', val ? Number(val) : null)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select week" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ORDINALS).map(([pos, label]) => (
+                <SelectItem key={pos} value={pos}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="startTime">Start Time</Label>
         <Input id="startTime" type="time" {...register('startTime')} />
         {errors.startTime && (
           <p className="text-sm text-destructive">{errors.startTime.message}</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="endDate">End Date (optional)</Label>
+        <Input id="endDate" type="date" {...register('endDate')} />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="startLocation">Start Location (optional)</Label>
+        <Input id="startLocation" {...register('startLocation')} />
       </div>
 
       <div className="space-y-2">

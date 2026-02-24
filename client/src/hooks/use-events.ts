@@ -3,14 +3,14 @@ import { api } from '@/lib/api';
 import type { Event } from '@/types';
 
 interface ListEventsParams {
-  category?: string;
+  categoryId?: number;
   start?: string;
   end?: string;
 }
 
 export function useEvents(params?: ListEventsParams) {
   const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set('category', params.category);
+  if (params?.categoryId) searchParams.set('categoryId', String(params.categoryId));
   if (params?.start) searchParams.set('start', params.start);
   if (params?.end) searchParams.set('end', params.end);
   const qs = searchParams.toString();
@@ -34,7 +34,7 @@ export function useEvent(id: number) {
 export function useCreateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { routeId: number; startDateTime: string; endLocation?: string; notes?: string }) =>
+    mutationFn: (data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string }) =>
       api.post<{ event: Event }>('/api/events', {
         ...data,
         startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z'),
@@ -49,7 +49,7 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: number; version: number; routeId?: number; startDateTime?: string; endLocation?: string; notes?: string }) =>
+    mutationFn: ({ id, ...data }: { id: number; version: number; routeId?: number; startDateTime?: string; startLocation?: string; endLocation?: string; notes?: string }) =>
       api.put<{ event: Event }>(`/api/events/${id}`, {
         ...data,
         ...(data.startDateTime ? { startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z') } : {}),
