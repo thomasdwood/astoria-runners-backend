@@ -23,6 +23,7 @@ const routeSchema = z.object({
   categoryId: z.number().int().positive('Category is required'),
   startLocation: z.string().max(200).optional(),
   endLocation: z.string().max(200).optional(),
+  stravaUrl: z.string().url('Must be a valid URL').max(500).optional().or(z.literal('')),
 });
 
 type RouteFormData = z.infer<typeof routeSchema>;
@@ -53,6 +54,7 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
           categoryId: route.categoryId,
           startLocation: route.startLocation ?? undefined,
           endLocation: route.endLocation ?? undefined,
+          stravaUrl: route.stravaUrl ?? undefined,
         }
       : {
           startLocation: defaultStartLocation ?? undefined,
@@ -75,8 +77,15 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
     (s) => s.toLowerCase().includes(startLocationValue.toLowerCase()) && s !== startLocationValue
   );
 
+  const handleFormSubmit = (data: RouteFormData) => {
+    onSubmit({
+      ...data,
+      stravaUrl: data.stravaUrl || undefined,
+    });
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input id="name" {...register('name')} />
@@ -155,6 +164,14 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
         <Input id="endLocation" {...register('endLocation')} />
         {errors.endLocation && (
           <p className="text-sm text-destructive">{errors.endLocation.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="stravaUrl">Strava Route URL <span className="text-muted-foreground text-xs">(optional)</span></Label>
+        <Input id="stravaUrl" type="url" placeholder="https://www.strava.com/routes/..." {...register('stravaUrl')} />
+        {errors.stravaUrl && (
+          <p className="text-sm text-destructive">{errors.stravaUrl.message}</p>
         )}
       </div>
 
