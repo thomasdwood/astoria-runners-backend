@@ -141,7 +141,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- Filter route dropdown by category on Create Event form (ui)
 
 ### Roadmap Evolution
 
