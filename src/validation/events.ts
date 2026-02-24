@@ -3,9 +3,9 @@ import { z } from 'zod';
 export const createEventSchema = z.object({
   routeId: z.number().int().positive('Route ID must be a positive integer'),
   startDateTime: z.string().datetime('Start date time must be a valid ISO 8601 date string').transform((val) => new Date(val)),
-  startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional(),
-  endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
-  notes: z.string().optional(),
+  startLocation: z.string().max(200, 'Start location must be 200 characters or less').nullable().optional(),
+  endLocation: z.string().max(200, 'End location must be 200 characters or less').nullable().optional(),
+  notes: z.string().nullable().optional(),
   isCancelled: z.boolean().optional(),
   recurringTemplateId: z.number().int().positive().optional(),
 });
@@ -26,10 +26,13 @@ export const createRecurringTemplateSchema = z.object({
   frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('weekly'),
   interval: z.number().int().min(1).max(4).default(1),
   bySetPos: z.number().int().min(-1).max(4).nullable().optional(),
-  endDate: z.string().datetime('End date must be a valid ISO 8601 date string').nullable().optional(),
-  startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional(),
-  endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
-  notes: z.string().optional(),
+  endDate: z.preprocess(
+    (val) => (val === '' ? null : typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val) ? new Date(val).toISOString() : val),
+    z.string().datetime('End date must be a valid ISO 8601 date string').nullable().optional(),
+  ),
+  startLocation: z.string().max(200, 'Start location must be 200 characters or less').nullable().optional(),
+  endLocation: z.string().max(200, 'End location must be 200 characters or less').nullable().optional(),
+  notes: z.string().nullable().optional(),
   // Deprecated: kept for backward compatibility but not used in RRULE generation
   count: z.number().int().positive('Count must be a positive integer').optional(),
 }).superRefine((data, ctx) => {
@@ -64,10 +67,13 @@ export const updateRecurringTemplateSchema = z.object({
   frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
   interval: z.number().int().min(1).max(4).optional(),
   bySetPos: z.number().int().min(-1).max(4).nullable().optional(),
-  endDate: z.string().datetime('End date must be a valid ISO 8601 date string').nullable().optional(),
-  startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional(),
-  endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
-  notes: z.string().optional(),
+  endDate: z.preprocess(
+    (val) => (val === '' ? null : typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val) ? new Date(val).toISOString() : val),
+    z.string().datetime('End date must be a valid ISO 8601 date string').nullable().optional(),
+  ),
+  startLocation: z.string().max(200, 'Start location must be 200 characters or less').nullable().optional(),
+  endLocation: z.string().max(200, 'End location must be 200 characters or less').nullable().optional(),
+  notes: z.string().nullable().optional(),
   version: z.number().int().nonnegative('Version must be a non-negative integer'),
 });
 

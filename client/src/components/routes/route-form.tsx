@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -58,6 +58,13 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
           startLocation: defaultStartLocation ?? undefined,
         },
   });
+
+  // Set default start location once it loads (async from API)
+  useEffect(() => {
+    if (!route && defaultStartLocation && !watch('startLocation')) {
+      setValue('startLocation', defaultStartLocation);
+    }
+  }, [defaultStartLocation]);
 
   const categoryIdValue = watch('categoryId');
   const startLocationValue = watch('startLocation') ?? '';

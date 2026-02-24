@@ -6,14 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CategoryBadge } from '@/components/shared/category-badge';
 import { MapPin, CalendarDays, Repeat, Plus } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { format, addDays, startOfToday } from 'date-fns';
 
 export function DashboardPage() {
   const { data: routes } = useRoutes();
-  const now = new Date();
+  const today = startOfToday();
   const { data: upcomingEvents } = useEvents({
-    start: now.toISOString(),
-    end: addDays(now, 7).toISOString(),
+    start: today.toISOString(),
+    end: addDays(today, 7).toISOString(),
   });
   const { data: templates } = useRecurringTemplates();
 

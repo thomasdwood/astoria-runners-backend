@@ -62,7 +62,7 @@ export function CalendarPage() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h2 className="text-lg font-semibold">
-              {monthQuery.data?.grid.monthName} {monthQuery.data?.grid.year}
+              {monthQuery.data?.grid.monthName}
             </h2>
             <Button variant="outline" size="icon" onClick={() => navigate('next')}>
               <ChevronRight className="h-4 w-4" />

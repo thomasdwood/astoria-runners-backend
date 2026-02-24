@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -75,6 +75,21 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
   const startTimeValue = watch('startTime');
   const endDateValue = watch('endDate');
   const startLocationValue = watch('startLocation') ?? '';
+
+  // Inherit start/end location from selected route
+  useEffect(() => {
+    if (!template && routeIdValue && routes) {
+      const route = routes.find((r) => r.id === routeIdValue);
+      if (route) {
+        if (route.startLocation && !watch('startLocation')) {
+          setValue('startLocation', route.startLocation);
+        }
+        if (route.endLocation && !watch('endLocation')) {
+          setValue('endLocation', route.endLocation);
+        }
+      }
+    }
+  }, [routeIdValue]);
 
   const [startLocOpen, setStartLocOpen] = useState(false);
   const [showEndDate, setShowEndDate] = useState(!!endDateValue);

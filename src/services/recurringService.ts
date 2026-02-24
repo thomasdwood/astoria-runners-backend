@@ -1,7 +1,7 @@
 import { eq, and, sql } from 'drizzle-orm';
 import rrulePkg from 'rrule';
 const { RRule } = rrulePkg;
-import { addDays, setHours, setMinutes, startOfDay, format } from 'date-fns';
+import { addDays, setHours, setMinutes, startOfMonth, format } from 'date-fns';
 import { db } from '../config/database.js';
 import { recurringTemplates } from '../db/schema/recurringTemplates.js';
 import { routes } from '../db/schema/routes.js';
@@ -27,28 +27,13 @@ function dayOfWeekToRRuleDay(day: number) {
   return daysMap[day];
 }
 
-// Helper: Compute dtstart for RRULE - find next occurrence of the day of week from today
+// Helper: Compute dtstart for RRULE - use start of current month so
+// current month's instances are included (e.g., "last Thursday" this month)
 function computeDtstart(dayOfWeek: number, startTime: string): Date {
-  const now = new Date();
   const [hours, minutes] = startTime.split(':').map(Number);
-
-  // Get the next occurrence of the specified day of week
-  let dtstart = startOfDay(now);
-  const currentDay = now.getDay();
-
-  if (currentDay === dayOfWeek) {
-    // If today is the target day, use today
-    dtstart = startOfDay(now);
-  } else {
-    // Calculate days until next occurrence
-    const daysUntilTarget = (dayOfWeek - currentDay + 7) % 7;
-    dtstart = addDays(dtstart, daysUntilTarget);
-  }
-
-  // Set the time
+  let dtstart = startOfMonth(new Date());
   dtstart = setHours(dtstart, hours);
   dtstart = setMinutes(dtstart, minutes);
-
   return dtstart;
 }
 

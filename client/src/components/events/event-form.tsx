@@ -105,6 +105,21 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
   const startDateTimeValue = watch('startDateTime');
   const startLocationValue = watch('startLocation') ?? '';
 
+  // Inherit start/end location from selected route
+  useEffect(() => {
+    if (!event && routeIdValue && routes) {
+      const route = routes.find((r) => r.id === routeIdValue);
+      if (route) {
+        if (route.startLocation && !watch('startLocation')) {
+          setValue('startLocation', route.startLocation);
+        }
+        if (route.endLocation && !watch('endLocation')) {
+          setValue('endLocation', route.endLocation);
+        }
+      }
+    }
+  }, [routeIdValue]);
+
   const [startLocOpen, setStartLocOpen] = useState(false);
 
   // Conflict detection state
