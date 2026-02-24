@@ -13,13 +13,12 @@ import {
 import { useCalendarList } from '@/hooks/use-calendar';
 import { ApiResponseError } from '@/lib/api';
 import { EventForm } from '@/components/events/event-form';
-import { MeetupDescriptionDialog } from '@/components/events/meetup-description-dialog';
+import { MeetupExportPopover } from '@/components/events/meetup-export-popover';
 import { PageHeader } from '@/components/shared/page-header';
 import { CategoryBadge } from '@/components/shared/category-badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, CalendarDays, FileText, Repeat, XCircle, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, CalendarDays, Repeat, XCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Event, CalendarEvent } from '@/types';
 
@@ -84,7 +83,6 @@ export function EventsPage() {
   const [editingEvent, setEditingEvent] = useState<Event | undefined>();
   const [editingInstance, setEditingInstance] = useState<CalendarEvent | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<Event | undefined>();
-  const [meetupEventId, setMeetupEventId] = useState<number | null>(null);
   const [recurringActionTarget, setRecurringActionTarget] = useState<RecurringActionTarget | undefined>();
   const [restoreTarget, setRestoreTarget] = useState<Event | undefined>();
 
@@ -329,7 +327,7 @@ export function EventsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-muted-foreground text-xs">—</span>
+                      <MeetupExportPopover calendarEvent={ce} />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -436,21 +434,21 @@ export function EventsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Switch
-                      checked={ev.postedToMeetup}
-                      onCheckedChange={() => handleMeetupToggle(ev)}
-                    />
+                    {ev.postedToMeetup ? (
+                      <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
+                        <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
+                        Meetup
+                      </Badge>
+                    ) : (
+                      <MeetupExportPopover
+                        eventId={ev.id}
+                        postedToMeetup={ev.postedToMeetup}
+                        onTogglePosted={() => handleMeetupToggle(ev)}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setMeetupEventId(ev.id)}
-                        title="Meetup description"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(ev)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -560,13 +558,6 @@ export function EventsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {meetupEventId && (
-        <MeetupDescriptionDialog
-          eventId={meetupEventId}
-          open={!!meetupEventId}
-          onOpenChange={(open) => !open && setMeetupEventId(null)}
-        />
-      )}
     </div>
   );
 }

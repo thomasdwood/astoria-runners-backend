@@ -123,10 +123,10 @@ export function useRestoreCancelledInstance() {
   });
 }
 
-export function useMeetupDescription(id: number) {
+export function useMeetupDescription(id: number, format: 'plain' | 'html' = 'plain') {
   return useQuery({
-    queryKey: ['events', id, 'meetup-description'],
-    queryFn: () => api.get<{ description: string }>(`/api/events/${id}/meetup-description`),
+    queryKey: ['events', id, 'meetup-description', format],
+    queryFn: () => api.get<{ description: string }>(`/api/events/${id}/meetup-description?format=${format}`),
     select: (data) => data.description,
     enabled: false,
   });
