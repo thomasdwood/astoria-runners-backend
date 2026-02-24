@@ -99,11 +99,12 @@ Plans:
   5. Template supports all required variables
   6. Organizer can copy generated description to clipboard with one click
   7. Organizer can mark event as "posted to Meetup" via checkbox
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [ ] 04-01-PLAN.md -- Discord webhook updates (category colors, settings toggle, recurring template notifications, Phase 3.1 data model)
 - [ ] 04-02-PLAN.md -- Meetup export updates (stravaUrl on routes, format toggle, Popover UI, Phase 3.1 data model)
+- [ ] 04-03-PLAN.md -- Gap closure: add stravaUrl input field to route form UI
 
 ## Progress
 
