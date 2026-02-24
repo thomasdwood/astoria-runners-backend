@@ -77,7 +77,7 @@ Plans:
 
 **Goal:** Address accumulated TODOs: replace hardcoded route categories with admin-defined categories (new categories table, CRUD API, admin UI), add startLocation field to routes/events with configurable default setting, show recurring event instances on the events admin page, and support complex recurring patterns (nth-weekday like 2nd Wednesday, last Thursday) using RRule bysetpos.
 **Depends on:** Phase 3
-**Plans:** 3/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [ ] 03.1-01-PLAN.md — Database schema foundation: categories table, settings table, route/event/recurring schema updates
