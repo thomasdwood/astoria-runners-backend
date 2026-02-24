@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { CATEGORY_DOT_COLORS, DAY_NAMES_SHORT } from '@/lib/constants';
+import { CATEGORY_COLOR_MAP, DAY_NAMES_SHORT } from '@/lib/constants';
 import { EventPopover } from './event-popover';
 import type { CalendarDay } from '@/types';
 
@@ -38,25 +38,28 @@ export function MonthGrid({ weeks }: MonthGridProps) {
                 {day.dayOfMonth}
               </div>
               <div className="space-y-0.5">
-                {day.events.map((event, ei) => (
-                  <EventPopover key={`${event.id ?? event.recurringTemplateId}-${ei}`} event={event}>
-                    <button className="w-full text-left">
-                      <div
-                        className={cn(
-                          'flex items-center gap-1 rounded px-1 py-0.5 text-xs truncate hover:bg-muted/80 transition-colors',
-                        )}
-                      >
-                        <span
+                {day.events.map((event, ei) => {
+                  const dotColor = (CATEGORY_COLOR_MAP[event.categoryColor] ?? CATEGORY_COLOR_MAP['slate']).dot;
+                  return (
+                    <EventPopover key={`${event.id ?? event.recurringTemplateId}-${ei}`} event={event}>
+                      <button className="w-full text-left">
+                        <div
                           className={cn(
-                            'h-1.5 w-1.5 rounded-full shrink-0',
-                            CATEGORY_DOT_COLORS[event.category]
+                            'flex items-center gap-1 rounded px-1 py-0.5 text-xs truncate hover:bg-muted/80 transition-colors',
                           )}
-                        />
-                        <span className="truncate">{event.title}</span>
-                      </div>
-                    </button>
-                  </EventPopover>
-                ))}
+                        >
+                          <span
+                            className={cn(
+                              'h-1.5 w-1.5 rounded-full shrink-0',
+                              dotColor
+                            )}
+                          />
+                          <span className="truncate">{event.title}</span>
+                        </div>
+                      </button>
+                    </EventPopover>
+                  );
+                })}
               </div>
             </div>
           ))}

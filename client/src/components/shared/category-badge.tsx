@@ -1,17 +1,17 @@
 import { Badge } from '@/components/ui/badge';
-import { CATEGORY_COLORS } from '@/lib/constants';
-import type { RouteCategory } from '@/types';
+import { CATEGORY_COLOR_MAP } from '@/lib/constants';
+import type { Category } from '@/types';
 
 interface CategoryBadgeProps {
-  category: RouteCategory;
+  category: Category | { name: string; color: string; icon?: string };
   className?: string;
 }
 
 export function CategoryBadge({ category, className }: CategoryBadgeProps) {
-  const colors = CATEGORY_COLORS[category];
+  const colors = CATEGORY_COLOR_MAP[category.color] ?? CATEGORY_COLOR_MAP['slate'];
   return (
     <Badge variant="outline" className={`${colors.badge} ${className ?? ''}`}>
-      {category}
+      {'icon' in category && category.icon ? `${category.icon} ` : ''}{category.name}
     </Badge>
   );
 }

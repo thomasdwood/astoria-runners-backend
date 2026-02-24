@@ -1,13 +1,14 @@
 import { cn } from '@/lib/utils';
-import { CATEGORY_COLORS, ALL_CATEGORIES } from '@/lib/constants';
-import type { RouteCategory } from '@/types';
+import { CATEGORY_COLOR_MAP } from '@/lib/constants';
+import type { Category } from '@/types';
 
 interface CategoryFilterProps {
-  selected: RouteCategory | undefined;
-  onSelect: (category: RouteCategory | undefined) => void;
+  categories: Category[];
+  selected: number | undefined;
+  onSelect: (categoryId: number | undefined) => void;
 }
 
-export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
+export function CategoryFilter({ categories, selected, onSelect }: CategoryFilterProps) {
   return (
     <div className="flex flex-wrap gap-2">
       <button
@@ -21,20 +22,20 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
       >
         All
       </button>
-      {ALL_CATEGORIES.map((category) => {
-        const colors = CATEGORY_COLORS[category];
+      {categories.map((category) => {
+        const colors = CATEGORY_COLOR_MAP[category.color] ?? CATEGORY_COLOR_MAP['slate'];
         return (
           <button
-            key={category}
-            onClick={() => onSelect(selected === category ? undefined : category)}
+            key={category.id}
+            onClick={() => onSelect(selected === category.id ? undefined : category.id)}
             className={cn(
               'rounded-full px-3 py-1 text-sm font-medium border transition-colors',
-              selected === category
+              selected === category.id
                 ? colors.badge
                 : 'bg-background text-muted-foreground border-border hover:bg-muted'
             )}
           >
-            {category}
+            {category.icon ? `${category.icon} ` : ''}{category.name}
           </button>
         );
       })}

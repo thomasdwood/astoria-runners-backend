@@ -1,5 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CategoryBadge } from '@/components/shared/category-badge';
+import { Badge } from '@/components/ui/badge';
+import { CATEGORY_COLOR_MAP } from '@/lib/constants';
 import { Clock, MapPin, FileText } from 'lucide-react';
 import type { CalendarEvent } from '@/types';
 
@@ -9,6 +10,7 @@ interface EventPopoverProps {
 }
 
 export function EventPopover({ event, children }: EventPopoverProps) {
+  const colors = CATEGORY_COLOR_MAP[event.categoryColor] ?? CATEGORY_COLOR_MAP['slate'];
   return (
     <Popover>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
@@ -16,7 +18,9 @@ export function EventPopover({ event, children }: EventPopoverProps) {
         <div className="space-y-3">
           <div>
             <h4 className="font-semibold">{event.title}</h4>
-            <CategoryBadge category={event.category} className="mt-1" />
+            <Badge variant="outline" className={`${colors.badge} mt-1`}>
+              {event.categoryIcon ? `${event.categoryIcon} ` : ''}{event.category}
+            </Badge>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">

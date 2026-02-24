@@ -4,21 +4,14 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ALL_CATEGORIES } from '@/lib/constants';
-import type { Route, RouteCategory } from '@/types';
+import type { Route } from '@/types';
 
 const routeSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   distance: z.coerce.number().positive('Distance must be positive'),
-  category: z.enum(['Brewery Run', 'Coffee Run', 'Brunch Run', 'Weekend'] as const),
-  endLocation: z.string().min(1, 'End location is required').max(200),
+  categoryId: z.number().int().positive('Category is required'),
+  startLocation: z.string().max(200).optional(),
+  endLocation: z.string().max(200).optional(),
 });
 
 type RouteFormData = z.infer<typeof routeSchema>;
@@ -33,17 +26,13 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<RouteFormData>({
     resolver: zodResolver(routeSchema),
     defaultValues: route
-      ? { name: route.name, distance: route.distance, category: route.category, endLocation: route.endLocation }
-      : { category: 'Brewery Run' as RouteCategory },
+      ? { name: route.name, distance: route.distance, categoryId: route.categoryId, startLocation: route.startLocation ?? undefined, endLocation: route.endLocation ?? undefined }
+      : {},
   });
-
-  const categoryValue = watch('category');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -60,23 +49,17 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label>Category</Label>
-        <Select
-          value={categoryValue}
-          onValueChange={(val) => setValue('category', val as RouteCategory)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ALL_CATEGORIES.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
+        <Label htmlFor="categoryId">Category ID</Label>
+        <Input id="categoryId" type="number" {...register('categoryId', { valueAsNumber: true })} />
+        {errors.categoryId && <p className="text-sm text-destructive">{errors.categoryId.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="startLocation">Start Location</Label>
+        <Input id="startLocation" {...register('startLocation')} />
+        {errors.startLocation && (
+          <p className="text-sm text-destructive">{errors.startLocation.message}</p>
+        )}
       </div>
 
       <div className="space-y-2">

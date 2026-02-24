@@ -4,14 +4,29 @@ export interface User {
   displayName: string;
 }
 
-export type RouteCategory = 'Brewery Run' | 'Coffee Run' | 'Brunch Run' | 'Weekend';
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Setting {
+  key: string;
+  value: string;
+  updatedAt: string;
+}
 
 export interface Route {
   id: number;
   name: string;
   distance: number;
-  category: RouteCategory;
-  endLocation: string;
+  categoryId: number;
+  category: Category;
+  startLocation: string | null;
+  endLocation: string | null;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -22,8 +37,10 @@ export interface Event {
   routeId: number;
   recurringTemplateId: number | null;
   startDateTime: string;
+  startLocation: string | null;
   endLocation: string | null;
   notes: string | null;
+  isCancelled: boolean;
   postedToMeetup: boolean;
   version: number;
   createdAt: string;
@@ -35,9 +52,15 @@ export interface RecurringTemplate {
   id: number;
   routeId: number;
   rrule: string;
+  frequency: 'weekly' | 'biweekly' | 'monthly';
+  interval: number;
   dayOfWeek: number;
+  bySetPos: number | null;
   startTime: string;
+  endDate: string | null;
+  startLocation: string | null;
   endLocation: string | null;
+  excludedDates: string | null;
   notes: string | null;
   isActive: boolean;
   version: number;
@@ -50,6 +73,7 @@ export interface RecurringInstance {
   recurringTemplateId: number;
   routeId: number;
   startDateTime: string;
+  startLocation: string | null;
   endLocation: string | null;
   notes: string | null;
   route: Route;
@@ -58,12 +82,16 @@ export interface RecurringInstance {
 export interface CalendarEvent {
   id: number | null;
   title: string;
-  category: RouteCategory;
+  category: string;
+  categoryColor: string;
+  categoryIcon: string;
   startDateTime: string;
   displayDate: string;
   displayTime: string;
+  startLocation: string | null;
   endLocation: string | null;
   notes: string | null;
+  isCancelled: boolean;
   isRecurring: boolean;
   recurringTemplateId: number | null;
 }

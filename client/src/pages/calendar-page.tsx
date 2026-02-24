@@ -6,7 +6,6 @@ import { CategoryFilter } from '@/components/calendar/category-filter';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { RouteCategory } from '@/types';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -22,7 +21,7 @@ export function CalendarPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [category, setCategory] = useState<RouteCategory | undefined>();
+  const [categoryId, setCategoryId] = useState<number | undefined>();
   const isMobile = useIsMobile();
   const [view, setView] = useState<string>(isMobile ? 'list' : 'month');
 
@@ -30,8 +29,8 @@ export function CalendarPage() {
     if (isMobile && view === 'month') setView('list');
   }, [isMobile, view]);
 
-  const monthQuery = useCalendarMonth({ year, month, category });
-  const listQuery = useCalendarList({ category });
+  const monthQuery = useCalendarMonth({ year, month, categoryId });
+  const listQuery = useCalendarList({ categoryId });
 
   function navigate(direction: 'prev' | 'next') {
     if (!monthQuery.data?.navigation) return;
@@ -52,7 +51,7 @@ export function CalendarPage() {
         </Tabs>
       </div>
 
-      <CategoryFilter selected={category} onSelect={setCategory} />
+      <CategoryFilter categories={[]} selected={categoryId} onSelect={setCategoryId} />
 
       {view === 'month' ? (
         <div className="space-y-4">

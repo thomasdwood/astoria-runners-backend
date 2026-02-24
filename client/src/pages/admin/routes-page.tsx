@@ -55,7 +55,7 @@ export function RoutesPage() {
     setDialogOpen(true);
   }
 
-  async function handleSubmit(data: { name: string; distance: number; category: Route['category']; endLocation: string }) {
+  async function handleSubmit(data: { name: string; distance: number; categoryId: number; startLocation?: string; endLocation?: string }) {
     try {
       if (editingRoute) {
         await updateRoute.mutateAsync({ id: editingRoute.id, version: editingRoute.version, ...data });
