@@ -1,6 +1,6 @@
 import { pgTable, serial, varchar, numeric, integer, timestamp } from 'drizzle-orm/pg-core';
 import { InferSelectModel, InferInsertModel, relations } from 'drizzle-orm';
-import { categories } from './categories';
+import { categories } from './categories.js';
 
 export const routes = pgTable('routes', {
   id: serial('id').primaryKey(),
