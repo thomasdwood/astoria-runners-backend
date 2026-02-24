@@ -43,6 +43,7 @@ Progress: [██████████] Phase 3.1 COMPLETE (6/6 plans complet
 | Phase 03.1-refinements-missing-features P04 | 4 | 2 tasks | 15 files |
 | Phase 03.1-refinements-missing-features P05 | 6 | 2 tasks | 8 files |
 | Phase 03.1-refinements-missing-features P06 | 14 | 2 tasks | 12 files |
+| Phase 04-integrations-export P02 | 3 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,8 @@ Recent decisions affecting current work:
 - [Phase 03.1-06]: Cancel recurring instance = isCancelled DB event with recurringTemplateId FK (visible as greyed out); Delete = add to excludedDates (invisible)
 - [Phase 03.1-06]: Edit recurring instance materializes as one-off exception event with recurringTemplateId FK linkback
 - [Phase 03.1-06]: Conflict detection uses time-of-day windows (morning <12, afternoon 12-17, evening 17+) not exact time matching
+- [Phase 04-02]: Native input[type=checkbox] used instead of Radix Checkbox — @radix-ui/react-checkbox not installed
+- [Phase 04-02]: Meetup badge shown when postedToMeetup=true; popover trigger shown otherwise — removes need for Switch toggle
 
 ### Pending Todos
 
@@ -171,14 +174,13 @@ Recent decisions affecting current work:
 ### Pending Todos (from UAT)
 
 - Expose cancel/restore actions for one-off events (not just recurring instances)
-- Meetup description generation should apply to recurring instances too (decide in future phase)
 - DB migration state needs cleanup — schema was applied manually, not via drizzle migrations
 
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Phase 3.1 UAT complete (16 passed, 1 skipped) + bug fixes committed. All features verified working.
-Next step: Phase 3.1 DONE. Ready for next phase or milestone wrap-up.
+Stopped at: Completed 04-02-PLAN.md (Meetup export update: stravaUrl, format toggle, Popover UI, Meetup badge)
+Next step: Phase 04 plan 02 complete. Phase 04 has 1 remaining plan (04-01) still pending SUMMARY.
 Resume file: .planning/phases/03.1-refinements-missing-features/03.1-UAT.md
 
 **Verification Status:**
