@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** Organizers can reliably schedule runs without data conflicts or chaos
-**Current focus:** Phase 3.1: Refinements & Missing Features
+**Current focus:** Phase 4: Integrations & Export
 
 ## Current Position
 
-Phase: 3.1 of 4 (Refinements & Missing Features)
-Plan: 6 of 6 in current phase
-Status: Complete
-Last activity: 2026-02-24 — Completed 03.1-06-PLAN.md (Recurring instance management: cancel/delete/edit on events page, cancelled display on public calendar, conflict detection)
+Phase: 4 of 4 (Integrations & Export)
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-02-24 — Completed 04-01-PLAN.md (Discord webhook integration update — category-colored embeds, recurring template notifications, admin toggle)
 
-Progress: [██████████] Phase 3.1 COMPLETE (6/6 plans complete)
+Progress: [█░░░░░░░░░] Phase 4 Plan 1/2 complete
 
 ## Performance Metrics
 
@@ -107,6 +107,9 @@ Recent decisions affecting current work:
 - DISCORD_WEBHOOK_URL optional (not in requiredVars) for graceful degradation
 - Used @ts-ignore for discord-webhook-node ESM type resolution issue
 - Fetch event data before deletion in deleteEvent to enable Discord notification
+- [Phase 04-01 update]: Discord notifications check settings toggle (discord_notifications_enabled) before sending — default enabled if setting not set
+- [Phase 04-01 update]: Recurring template delete fetches full route+category data before deletion for notification payload
+- [Phase 04-01 update]: Settings page uses useSettings() hook directly instead of useDefaultStartLocation() wrapper for shared query
 
 **From Phase 4 Plan 2:**
 - Used template literals instead of Handlebars for simple template generation (no extra dependency)
@@ -179,9 +182,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 04-02-PLAN.md (Meetup export update: stravaUrl, format toggle, Popover UI, Meetup badge)
-Next step: Phase 04 plan 02 complete. Phase 04 has 1 remaining plan (04-01) still pending SUMMARY.
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-UAT.md
+Stopped at: Completed 04-01-PLAN.md. Discord notifications fully updated for Phase 3.1 data model, recurring template delete wired, settings toggle added, schema .js extensions fixed.
+Next step: Phase 4 Plan 1 of 2 complete. Ready for 04-02-PLAN.md (Meetup integration).
+Resume file: .planning/phases/04-integrations-export/04-01-SUMMARY.md
 
 **Verification Status:**
 - ✅ UAT complete: 16/18 passed, 1 skipped (cancel→restore dependency), 0 open issues

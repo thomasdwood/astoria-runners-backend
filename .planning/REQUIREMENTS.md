@@ -38,9 +38,9 @@ Requirements for initial proof of concept. Each maps to roadmap phases.
 
 ### Integrations
 
-- [ ] **INTEG-01**: System posts event announcement to Discord when event is created
-- [ ] **INTEG-02**: System posts update to Discord when event is modified or deleted
-- [ ] **INTEG-03**: Discord announcements include event details: date, time, route, end location, notes
+- [x] **INTEG-01**: System posts event announcement to Discord when event is created
+- [x] **INTEG-02**: System posts update to Discord when event is modified or deleted
+- [x] **INTEG-03**: Discord announcements include event details: date, time, route, end location, notes
 
 ### Meetup Export
 
@@ -124,9 +124,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAL-01 | Phase 3 | Pending |
 | CAL-02 | Phase 3 | Pending |
 | CAL-03 | Phase 3 | Pending |
-| INTEG-01 | Phase 4 | Pending |
-| INTEG-02 | Phase 4 | Pending |
-| INTEG-03 | Phase 4 | Pending |
+| INTEG-01 | Phase 4 | Complete |
+| INTEG-02 | Phase 4 | Complete |
+| INTEG-03 | Phase 4 | Complete |
 | EXPORT-01 | Phase 4 | Complete |
 | EXPORT-02 | Phase 4 | Complete |
 | EXPORT-03 | Phase 4 | Complete |
