@@ -18,32 +18,11 @@ export function errorHandler(
     method: req.method,
   });
 
-  // Development: include stack trace
-  if (process.env.NODE_ENV === 'development') {
-    res.status(statusCode).json({
-      error: {
-        message: err.message,
-        stack: err.stack,
-        statusCode,
-      },
-    });
-    return;
-  }
+  const message = statusCode >= 500 && process.env.NODE_ENV !== 'development'
+    ? 'Internal server error'
+    : err.message;
 
-  // Production: sanitize errors
-  if (statusCode >= 500) {
-    res.status(statusCode).json({
-      error: {
-        message: 'Internal server error',
-        statusCode,
-      },
-    });
-  } else {
-    res.status(statusCode).json({
-      error: {
-        message: err.message,
-        statusCode,
-      },
-    });
-  }
+  res.status(statusCode).json({
+    error: message,
+  });
 }
