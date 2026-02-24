@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** Organizers can reliably schedule runs without data conflicts or chaos
-**Current focus:** Phase 4: Integrations and Export
+**Current focus:** Phase 3.1: Refinements & Missing Features
 
 ## Current Position
 
-Phase: 4 of 4 (Integrations and Export)
-Plan: 2 of 2 in current phase
-Status: Complete
-Last activity: 2026-02-13 — Completed 04-02-PLAN.md (Meetup export functionality)
+Phase: 3.1 of 4 (Refinements & Missing Features)
+Plan: 1 of 3 in current phase
+Status: In Progress
+Last activity: 2026-02-24 — Completed 03.1-01-PLAN.md (Database schema foundation)
 
-Progress: [██████████] 100%
+Progress: [██████████] Phase 3.1 in progress (1/3 plans complete)
 
 ## Performance Metrics
 
@@ -31,10 +31,11 @@ Progress: [██████████] 100%
 | 02-route-management | 2 | 4 min | 2 min |
 | 03-event-scheduling-public-calendar | 3 | 7 min | 2 min |
 | 04-integrations-export | 2 | 4 min | 2 min |
+| 03.1-refinements-missing-features | 1/3 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (3 min), 03-03 (2 min), 04-01 (2 min), 04-02 (2 min)
-- Trend: Stable (consistent 2-3 minute execution time for recent plans)
+- Last 5 plans: 03-02 (3 min), 03-03 (2 min), 04-01 (2 min), 04-02 (2 min), 03.1-01 (4 min)
+- Trend: Stable (consistent 2-4 minute execution time for recent plans)
 
 *Updated after each plan completion*
 
@@ -108,6 +109,13 @@ Recent decisions affecting current work:
 - Event endLocation overrides route endLocation in template when provided
 - Specific sub-resource routes placed before generic /:id routes for correct Express path matching
 
+**From Phase 3.1 Plan 1:**
+- Categories as pgTable FK instead of pgEnum allows runtime CRUD without DB migrations
+- Settings as key-value store (key varchar, value text) for flexible app configuration
+- RRULE strings without COUNT for open-ended recurring templates; COUNT stripped from existing data in migration
+- Category filter in services stubbed with TODO for 03.1-02 full service migration (returns all results temporarily)
+- endLocation made nullable on routes (start == end same location pattern supported)
+
 ### Pending Todos
 
 None yet.
@@ -139,10 +147,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Phase 3.1 context gathered
-Next step: Plan phase 3.1 (/gsd:plan-phase 3.1)
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-CONTEXT.md
+Last session: 2026-02-24
+Stopped at: Completed 03.1-01-PLAN.md (Database schema foundation)
+Next step: Execute 03.1-02 (Service and API layer for categories, settings, start location)
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-01-SUMMARY.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
@@ -150,4 +158,4 @@ Resume file: .planning/phases/03.1-refinements-missing-features/03.1-CONTEXT.md
 
 ---
 *State initialized: 2026-02-12*
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-24*
