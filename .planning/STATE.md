@@ -112,6 +112,10 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Roadmap Evolution
+
+- Phase 03.1 inserted after Phase 3: Refinements & Missing Features (INSERTED) — flexible categories, start location, recurring on events page, complex recurring patterns
+
 ### Blockers/Concerns
 
 **Research flags for Phase 1:**
@@ -135,10 +139,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-13
-Stopped at: Static verification complete, documentation added (README.md, SETUP.md)
-Next step: Runtime verification when Mac Mini arrives (requires Docker + Postgres + Redis)
-Resume file: .planning/phases/04-integrations-export/04-02-SUMMARY.md
+Last session: 2026-02-23
+Stopped at: Phase 3.1 context gathered
+Next step: Plan phase 3.1 (/gsd:plan-phase 3.1)
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-CONTEXT.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
