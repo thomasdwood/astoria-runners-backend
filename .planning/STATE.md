@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 3.1 of 4 (Refinements & Missing Features)
-Plan: 5 of 6 in current phase
-Status: In Progress
-Last activity: 2026-02-24 — Completed 03.1-05-PLAN.md (Admin settings page, updated forms with dynamic categories/startLocation/recurring preview)
+Plan: 6 of 6 in current phase
+Status: Complete
+Last activity: 2026-02-24 — Completed 03.1-06-PLAN.md (Recurring instance management: cancel/delete/edit on events page, cancelled display on public calendar, conflict detection)
 
-Progress: [██████████] Phase 3.1 in progress (4/4 plans complete)
+Progress: [██████████] Phase 3.1 COMPLETE (6/6 plans complete)
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [██████████] Phase 3.1 in progress (4/4 plans comp
 | Phase 03.1-refinements-missing-features P03 | 8 | 2 tasks | 7 files |
 | Phase 03.1-refinements-missing-features P04 | 4 | 2 tasks | 15 files |
 | Phase 03.1-refinements-missing-features P05 | 6 | 2 tasks | 8 files |
+| Phase 03.1-refinements-missing-features P06 | 14 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,10 @@ Recent decisions affecting current work:
 - [Phase 03.1-05]: Autocomplete Popover on startLocation inputs — Radix Popover already installed, no new dependency
 - [Phase 03.1-05]: endLocation auto-copy done client-side in EventForm's handleFormSubmit, not server/API layer — keeps API contract clean
 - [Phase 03.1-05]: RecurrencePreview query enabled only when frequency + dayOfWeek + startTime are populated — avoids incomplete API calls
+- [Phase 03.1-06]: CalendarEvent backend flattened to categoryColor/categoryIcon/routeId/startLocation — backend formatEventForCalendar maps nested category object to flat strings; fixes plan-04 discrepancy
+- [Phase 03.1-06]: Cancel recurring instance = isCancelled DB event with recurringTemplateId FK (visible as greyed out); Delete = add to excludedDates (invisible)
+- [Phase 03.1-06]: Edit recurring instance materializes as one-off exception event with recurringTemplateId FK linkback
+- [Phase 03.1-06]: Conflict detection uses time-of-day windows (morning <12, afternoon 12-17, evening 17+) not exact time matching
 
 ### Pending Todos
 
@@ -166,9 +171,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 03.1-05-PLAN.md (Admin settings page, updated forms, dynamic calendar filter)
-Next step: Phase 3.1 Plan 06 — remaining refinements
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-05-SUMMARY.md
+Stopped at: Completed 03.1-06-PLAN.md (Recurring instance management, public calendar cancelled display, conflict detection)
+Next step: Phase 3.1 COMPLETE — all 6 plans done
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-06-SUMMARY.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
