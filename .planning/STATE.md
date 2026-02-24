@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 3.1 of 4 (Refinements & Missing Features)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In Progress
-Last activity: 2026-02-24 — Completed 03.1-01-PLAN.md (Database schema foundation)
+Last activity: 2026-02-24 — Completed 03.1-02-PLAN.md (Service and API layer for categories, settings, start location)
 
-Progress: [██████████] Phase 3.1 in progress (1/3 plans complete)
+Progress: [██████████] Phase 3.1 in progress (2/3 plans complete)
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [██████████] Phase 3.1 in progress (1/3 plans comp
 - Trend: Stable (consistent 2-4 minute execution time for recent plans)
 
 *Updated after each plan completion*
+| Phase 03.1-refinements-missing-features P02 | 4 | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,9 @@ Recent decisions affecting current work:
 - RRULE strings without COUNT for open-ended recurring templates; COUNT stripped from existing data in migration
 - Category filter in services stubbed with TODO for 03.1-02 full service migration (returns all results temporarily)
 - endLocation made nullable on routes (start == end same location pattern supported)
+- [Phase 03.1-02]: Public GET /api/categories and GET /api/settings (no auth) so frontend forms/calendar can load data without authentication
+- [Phase 03.1-02]: CalendarEvent.category type changed from string to object (id/name/color/icon) to support rich category display
+- [Phase 03.1-02]: JS-side categoryId filtering after relational query (not SQL WHERE join) for simplicity with small category lists
 
 ### Pending Todos
 
@@ -148,9 +152,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 03.1-01-PLAN.md (Database schema foundation)
-Next step: Execute 03.1-02 (Service and API layer for categories, settings, start location)
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-01-SUMMARY.md
+Stopped at: Completed 03.1-02-PLAN.md (Service and API layer for categories, settings, start location)
+Next step: Execute 03.1-03 (Frontend UI for categories, settings, and start location)
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-02-SUMMARY.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
