@@ -68,35 +68,10 @@ export async function listEvents(filters?: { category?: string; start?: Date; en
     conditions.push(lte(events.startDateTime, filters.end));
   }
 
-  // If category filter is provided, we need to use explicit JOIN
-  if (filters?.category) {
-    const results = await db
-      .select({
-        id: events.id,
-        routeId: events.routeId,
-        recurringTemplateId: events.recurringTemplateId,
-        startDateTime: events.startDateTime,
-        endLocation: events.endLocation,
-        notes: events.notes,
-        version: events.version,
-        createdAt: events.createdAt,
-        updatedAt: events.updatedAt,
-        route: routes,
-      })
-      .from(events)
-      .innerJoin(routes, eq(events.routeId, routes.id))
-      .where(
-        and(
-          eq(routes.category, filters.category as any),
-          conditions.length > 0 ? and(...conditions) : undefined
-        )
-      )
-      .orderBy(events.startDateTime);
+  // TODO(03.1-02): category filter by string will be implemented after categories API migration
+  // Category filtering via route.categoryId join deferred to service layer migration in 03.1-02
 
-    return results;
-  }
-
-  // No category filter - use relational query
+  // Use relational query
   const results = await db.query.events.findMany({
     where: conditions.length > 0 ? and(...conditions) : undefined,
     with: {

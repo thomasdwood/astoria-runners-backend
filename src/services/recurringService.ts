@@ -114,10 +114,8 @@ export async function listRecurringTemplates(filters?: { category?: string }) {
     ],
   });
 
-  // Filter by category in JS since relational queries don't support cross-table where
-  if (filters?.category) {
-    return results.filter((t) => t.route.category === filters.category);
-  }
+  // TODO(03.1-02): category filter by string will be implemented after categories API migration
+  // Category filtering via route.categoryId deferred to service layer migration in 03.1-02
 
   return results;
 }

@@ -17,7 +17,8 @@ export async function createRoute(data: CreateRouteInput) {
     .values({
       name: data.name,
       distance: String(data.distance),
-      category: data.category,
+      // TODO(03.1-02): categoryId will be looked up from data.category string after categories API is implemented
+      categoryId: 1, // placeholder - service layer migration in 03.1-02
       endLocation: data.endLocation,
     })
     .returning();
@@ -36,15 +37,8 @@ export async function getRouteById(id: number) {
 }
 
 export async function listRoutes(filters?: { category?: string }) {
-  if (filters?.category) {
-    const results = await db
-      .select()
-      .from(routes)
-      .where(eq(routes.category, filters.category as any))
-      .orderBy(routes.name);
-    return results.map(formatRoute);
-  }
-
+  // TODO(03.1-02): category filter by string will be implemented after categories API migration
+  // For now, return all routes (category filtering deferred to service layer migration in 03.1-02)
   const results = await db.select().from(routes).orderBy(routes.name);
   return results.map(formatRoute);
 }
@@ -64,9 +58,8 @@ export async function updateRoute(id: number, data: UpdateRouteInput) {
   if (fields.distance !== undefined) {
     updateFields.distance = String(fields.distance);
   }
-  if (fields.category !== undefined) {
-    updateFields.category = fields.category;
-  }
+  // TODO(03.1-02): category update by string will be implemented after categories API migration
+  // if (fields.category !== undefined) { updateFields.categoryId = ... }
   if (fields.endLocation !== undefined) {
     updateFields.endLocation = fields.endLocation;
   }
