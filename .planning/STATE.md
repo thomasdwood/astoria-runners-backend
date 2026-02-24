@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 3.1 of 4 (Refinements & Missing Features)
-Plan: 2 of 3 in current phase
+Plan: 3 of 3 in current phase
 Status: In Progress
-Last activity: 2026-02-24 — Completed 03.1-02-PLAN.md (Service and API layer for categories, settings, start location)
+Last activity: 2026-02-24 — Completed 03.1-03-PLAN.md (Complex recurring patterns: biweekly/monthly nth-weekday, preview API, isCancelled flag)
 
-Progress: [██████████] Phase 3.1 in progress (2/3 plans complete)
+Progress: [██████████] Phase 3.1 in progress (3/3 plans complete)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [██████████] Phase 3.1 in progress (2/3 plans comp
 
 *Updated after each plan completion*
 | Phase 03.1-refinements-missing-features P02 | 4 | 2 tasks | 16 files |
+| Phase 03.1-refinements-missing-features P03 | 8 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,11 @@ Recent decisions affecting current work:
 - [Phase 03.1-02]: Public GET /api/categories and GET /api/settings (no auth) so frontend forms/calendar can load data without authentication
 - [Phase 03.1-02]: CalendarEvent.category type changed from string to object (id/name/color/icon) to support rich category display
 - [Phase 03.1-02]: JS-side categoryId filtering after relational query (not SQL WHERE join) for simplicity with small category lists
+- [Phase 03.1-03]: RecurrencePattern object interface replaces individual params in buildRRule for extensibility
+- [Phase 03.1-03]: NEVER include count in RRULE strings — use .between(rangeStart, rangeEnd) for all generation
+- [Phase 03.1-03]: formatRecurrenceText uses local DAY_NAMES/ORDINALS, not rrule.toText() (incorrect for bysetpos patterns)
+- [Phase 03.1-03]: Preview endpoint is GET /preview with query params, placed before /:id to avoid Express routing conflict
+- [Phase 03.1-03]: isCancelled: false for virtual recurring instances; propagated from DB for materialized events
 
 ### Pending Todos
 
@@ -152,9 +158,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 03.1-02-PLAN.md (Service and API layer for categories, settings, start location)
-Next step: Execute 03.1-03 (Frontend UI for categories, settings, and start location)
-Resume file: .planning/phases/03.1-refinements-missing-features/03.1-02-SUMMARY.md
+Stopped at: Completed 03.1-03-PLAN.md (Complex recurring patterns and preview API)
+Next step: Phase 3.1 backend complete — review ROADMAP for next phase
+Resume file: .planning/phases/03.1-refinements-missing-features/03.1-03-SUMMARY.md
 
 **Verification Status:**
 - ✅ Static verification complete (TypeScript compilation, code structure, schema validation)
