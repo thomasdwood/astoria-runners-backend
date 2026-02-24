@@ -4,8 +4,10 @@ import { users } from './schema/users.js';
 import { routes } from './schema/routes.js';
 import { events } from './schema/events.js';
 import { recurringTemplates } from './schema/recurringTemplates.js';
+import { categories } from './schema/categories.js';
+import { settings } from './schema/settings.js';
 import { hashPassword } from '../services/authService.js';
-import { eq, inArray, and, isNull } from 'drizzle-orm';
+import { eq, inArray, and, isNull, sql } from 'drizzle-orm';
 import rrulePkg from 'rrule';
 const { RRule } = rrulePkg;
 import { addDays, setHours, setMinutes, startOfDay } from 'date-fns';
@@ -59,36 +61,83 @@ async function seed() {
 
   console.log(`✓ Seeded ${seedUsers.length} organizer accounts\n`);
 
+  // Seed categories (must exist before routes due to FK)
+  const seedCategories = [
+    { name: 'Brewery Run', color: 'amber', icon: '🍺' },
+    { name: 'Coffee Run', color: 'orange', icon: '☕' },
+    { name: 'Brunch Run', color: 'emerald', icon: '🥂' },
+    { name: 'Weekend', color: 'blue', icon: '🌅' },
+  ];
+
+  for (const category of seedCategories) {
+    await db
+      .insert(categories)
+      .values(category)
+      .onConflictDoUpdate({
+        target: categories.name,
+        set: {
+          color: category.color,
+          icon: category.icon,
+          updatedAt: sql`NOW()`,
+        },
+      });
+    console.log(`✓ Seeded category: ${category.name} (${category.icon})`);
+  }
+
+  console.log(`✓ Seeded ${seedCategories.length} categories\n`);
+
+  // Seed default start location setting
+  await db
+    .insert(settings)
+    .values({ key: 'default_start_location', value: 'Astoria Park Track' })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: {
+        value: 'Astoria Park Track',
+        updatedAt: sql`NOW()`,
+      },
+    });
+  console.log('✓ Seeded setting: default_start_location = Astoria Park Track\n');
+
+  // Look up category IDs for route seeding
+  const categoryRows = await db.select({ id: categories.id, name: categories.name }).from(categories);
+  const categoryIdByName = new Map(categoryRows.map(c => [c.name, c.id]));
+
   // Seed routes
   const sampleRoutes = [
     {
       name: 'ICONYC Brewing Loop',
       distance: '3.50',
-      category: 'Brewery Run' as const,
+      categoryId: categoryIdByName.get('Brewery Run')!,
+      startLocation: null,
       endLocation: 'ICONYC Brewing, 31-01 Vernon Blvd',
     },
     {
       name: 'Kinship Coffee Out-and-Back',
       distance: '2.80',
-      category: 'Coffee Run' as const,
+      categoryId: categoryIdByName.get('Coffee Run')!,
+      startLocation: null,
       endLocation: 'Kinship Coffee, 30-13 34th St',
     },
     {
       name: 'Astoria Park to Comfortland',
       distance: '4.20',
-      category: 'Brunch Run' as const,
+      categoryId: categoryIdByName.get('Brunch Run')!,
+      startLocation: null,
       endLocation: 'Comfortland, 40-09 30th Ave',
     },
     {
       name: 'Randalls Island Bridge Loop',
       distance: '8.00',
-      category: 'Weekend' as const,
+      categoryId: categoryIdByName.get('Weekend')!,
+      startLocation: null,
       endLocation: 'Astoria Park Great Lawn',
     },
     {
       name: 'Singlecut Beersmiths Run',
       distance: '4.00',
-      category: 'Brewery Run' as const,
+      categoryId: categoryIdByName.get('Brewery Run')!,
+      startLocation: null,
       endLocation: 'SingleCut Beersmiths, 19-33 37th St',
     },
   ];
@@ -138,15 +187,14 @@ async function seed() {
     return dtstart;
   }
 
-  // Helper: Build RRULE string
-  function buildRRule(dayOfWeek: number, startTime: string, count: number): string {
+  // Helper: Build RRULE string (without COUNT for open-ended recurrence)
+  function buildRRule(dayOfWeek: number, startTime: string): string {
     const dtstart = computeDtstart(dayOfWeek, startTime);
 
     const rule = new RRule({
       freq: RRule.WEEKLY,
       byweekday: [dayOfWeekToRRuleDay(dayOfWeek)],
       dtstart: dtstart,
-      count: count,
     });
 
     return rule.toString();
@@ -158,13 +206,15 @@ async function seed() {
       routeName: 'ICONYC Brewing Loop',
       dayOfWeek: 1, // Monday
       startTime: '18:30',
-      count: 12,
+      frequency: 'weekly' as const,
+      interval: 1,
     },
     {
       routeName: 'Randalls Island Bridge Loop',
       dayOfWeek: 6, // Saturday
       startTime: '08:00',
-      count: 8,
+      frequency: 'weekly' as const,
+      interval: 1,
     },
   ];
 
@@ -181,8 +231,8 @@ async function seed() {
       continue;
     }
 
-    // Build RRULE string
-    const rruleString = buildRRule(template.dayOfWeek, template.startTime, template.count);
+    // Build RRULE string (no COUNT - open-ended)
+    const rruleString = buildRRule(template.dayOfWeek, template.startTime);
 
     // Delete existing template with matching routeId + dayOfWeek (idempotent)
     await db
@@ -194,12 +244,16 @@ async function seed() {
         )
       );
 
-    // Insert new template
+    // Insert new template with new frequency/interval columns
     await db.insert(recurringTemplates).values({
       routeId: route.id,
       rrule: rruleString,
       dayOfWeek: template.dayOfWeek,
       startTime: template.startTime,
+      frequency: template.frequency,
+      interval: template.interval,
+      bySetPos: null,
+      endDate: null,
       endLocation: route.endLocation,
     });
 
@@ -207,6 +261,28 @@ async function seed() {
   }
 
   console.log(`✓ Seeded ${recurringTemplateData.length} recurring templates\n`);
+
+  // RRULE migration: strip COUNT from any existing recurring templates that have it
+  const allTemplates = await db.select({ id: recurringTemplates.id, rrule: recurringTemplates.rrule }).from(recurringTemplates);
+  let migratedCount = 0;
+  for (const template of allTemplates) {
+    if (template.rrule.includes(';COUNT=')) {
+      const cleanRRule = template.rrule.replace(/;COUNT=\d+/g, '');
+      await db
+        .update(recurringTemplates)
+        .set({
+          rrule: cleanRRule,
+          frequency: 'weekly',
+          interval: 1,
+          updatedAt: sql`NOW()`,
+        })
+        .where(eq(recurringTemplates.id, template.id));
+      migratedCount++;
+    }
+  }
+  if (migratedCount > 0) {
+    console.log(`✓ Migrated ${migratedCount} RRULE strings (stripped COUNT parameter)\n`);
+  }
 
   // Helper: Compute next occurrence of a day of week
   function nextDay(date: Date, dayOfWeek: number): Date {
@@ -292,7 +368,7 @@ async function seed() {
 
   console.log(`✓ Seeded ${oneOffEventData.length} one-off events\n`);
 
-  console.log(`✓ Seed complete: ${seedUsers.length} organizer accounts, ${sampleRoutes.length} routes, ${recurringTemplateData.length} recurring templates, ${oneOffEventData.length} one-off events`);
+  console.log(`✓ Seed complete: ${seedUsers.length} organizer accounts, ${seedCategories.length} categories, ${sampleRoutes.length} routes, ${recurringTemplateData.length} recurring templates, ${oneOffEventData.length} one-off events`);
 }
 
 /**
