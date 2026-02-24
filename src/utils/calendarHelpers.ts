@@ -25,6 +25,7 @@ export interface CalendarEvent {
   notes: string | null;
   isRecurring: boolean; // true if from recurring template
   recurringTemplateId: number | null;
+  isCancelled: boolean; // true for materialized events marked as cancelled
 }
 
 /**
@@ -69,6 +70,7 @@ export function formatEventForCalendar(
     notes: event.notes || null,
     isRecurring: !!event.recurringTemplateId,
     recurringTemplateId: event.recurringTemplateId || null,
+    isCancelled: event.isCancelled === true,
   };
 }
 

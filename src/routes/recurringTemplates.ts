@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
-import { createRecurringTemplateSchema, updateRecurringTemplateSchema } from '../validation/events.js';
+import { createRecurringTemplateSchema, updateRecurringTemplateSchema, recurrencePreviewSchema } from '../validation/events.js';
 import { z } from 'zod';
 import * as recurringService from '../services/recurringService.js';
 
@@ -54,6 +54,35 @@ router.get(
     const templates = await recurringService.listRecurringTemplates(filters);
 
     res.status(200).json({ templates });
+  })
+);
+
+/**
+ * GET /preview
+ * Preview recurrence pattern - returns natural language text and next 3 dates
+ * Must be defined before /:id to avoid path conflict
+ */
+router.get(
+  '/preview',
+  validateQuery(recurrencePreviewSchema),
+  asyncHandler(async (req, res) => {
+    // Zod has already coerced and validated the query params via recurrencePreviewSchema
+    const { frequency, dayOfWeek, bySetPos, startTime } = req.query as unknown as {
+      frequency: 'weekly' | 'biweekly' | 'monthly';
+      dayOfWeek: number;
+      bySetPos?: number | null;
+      startTime: string;
+    };
+
+    const pattern: recurringService.RecurrencePattern = {
+      frequency,
+      dayOfWeek: Number(dayOfWeek),
+      bySetPos: bySetPos != null ? Number(bySetPos) : undefined,
+      startTime,
+    };
+
+    const preview = recurringService.getRecurrencePreview(pattern);
+    res.status(200).json(preview);
   })
 );
 
