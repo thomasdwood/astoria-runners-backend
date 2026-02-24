@@ -6,6 +6,7 @@ export const createRouteSchema = z.object({
   categoryId: z.number().int().positive('Category ID must be a positive integer'),
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional().or(z.literal('')),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
+  stravaUrl: z.string().url('Must be a valid URL').max(500).optional().or(z.literal('')),
 });
 
 export const updateRouteSchema = z.object({
@@ -14,6 +15,7 @@ export const updateRouteSchema = z.object({
   categoryId: z.number().int().positive('Category ID must be a positive integer').optional(),
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional().or(z.literal('')),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
+  stravaUrl: z.string().url('Must be a valid URL').max(500).optional().or(z.literal('')),
   version: z.number().int().nonnegative('Version must be a non-negative integer'),
 });
 

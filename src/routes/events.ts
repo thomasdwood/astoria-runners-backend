@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
+import { z } from 'zod';
 import { createEventSchema, updateEventSchema, listEventsQuerySchema, updateMeetupStatusSchema } from '../validation/events.js';
 import * as eventService from '../services/eventService.js';
 import { generateMeetupDescription } from '../services/meetupExportService.js';
@@ -57,12 +58,17 @@ router.get(
   })
 );
 
+const meetupDescriptionQuerySchema = z.object({
+  format: z.enum(['plain', 'html']).default('plain'),
+});
+
 /**
  * GET /:id/meetup-description
  * Generate Meetup description for an event
  */
 router.get(
   '/:id/meetup-description',
+  validateQuery(meetupDescriptionQuerySchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
     if (isNaN(id)) {
@@ -76,7 +82,8 @@ router.get(
       return;
     }
 
-    const description = generateMeetupDescription(event as any);
+    const format = (req.query.format as 'plain' | 'html') ?? 'plain';
+    const description = generateMeetupDescription(event as any, format);
     res.status(200).json({ description });
   })
 );

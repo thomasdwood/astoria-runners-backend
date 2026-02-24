@@ -9,6 +9,7 @@ export const routes = pgTable('routes', {
   categoryId: integer('category_id').notNull().references(() => categories.id),
   startLocation: varchar('start_location', { length: 200 }), // nullable, uses default setting if null
   endLocation: varchar('end_location', { length: 200 }),
+  stravaUrl: varchar('strava_url', { length: 500 }),
   version: integer('version').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

@@ -27,6 +27,7 @@ export interface Route {
   category: Category;
   startLocation: string | null;
   endLocation: string | null;
+  stravaUrl: string | null;
   version: number;
   createdAt: string;
   updatedAt: string;

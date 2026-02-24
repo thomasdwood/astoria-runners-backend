@@ -24,6 +24,7 @@ export async function createRoute(data: CreateRouteInput) {
       categoryId: data.categoryId,
       startLocation: data.startLocation || null,
       endLocation: data.endLocation || null,
+      stravaUrl: data.stravaUrl || null,
     })
     .returning();
 
@@ -96,6 +97,9 @@ export async function updateRoute(id: number, data: UpdateRouteInput) {
   }
   if (fields.endLocation !== undefined) {
     updateFields.endLocation = fields.endLocation || null;
+  }
+  if (fields.stravaUrl !== undefined) {
+    updateFields.stravaUrl = fields.stravaUrl || null;
   }
 
   const [updated] = await db
