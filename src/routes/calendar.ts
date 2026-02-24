@@ -31,13 +31,14 @@ router.get(
   '/',
   validateQuery(calendarQuerySchema),
   asyncHandler(async (req, res) => {
-    const query = req.query as {
-      view?: 'month' | 'list';
-      year?: number;
-      month?: number;
-      start?: string;
-      end?: string;
-      categoryId?: number;
+    const raw = req.query as Record<string, any>;
+    const query = {
+      view: raw.view as 'month' | 'list' | undefined,
+      year: raw.year ? Number(raw.year) : undefined,
+      month: raw.month ? Number(raw.month) : undefined,
+      start: raw.start as string | undefined,
+      end: raw.end as string | undefined,
+      categoryId: raw.categoryId ? Number(raw.categoryId) : undefined,
     };
 
     // Default to month view

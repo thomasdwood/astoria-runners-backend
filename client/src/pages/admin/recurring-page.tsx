@@ -204,7 +204,7 @@ export function RecurringPage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingTemplate ? 'Edit Template' : 'Create Recurring Template'}

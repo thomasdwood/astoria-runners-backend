@@ -1,7 +1,7 @@
 import { pgTable, serial, integer, varchar, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { InferSelectModel, InferInsertModel, relations } from 'drizzle-orm';
-import { routes } from './routes.js';
-import { recurringTemplates } from './recurringTemplates.js';
+import { routes } from './routes';
+import { recurringTemplates } from './recurringTemplates';
 
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),

@@ -26,6 +26,10 @@ export function validateQuery(schema: ZodSchema) {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = schema.parse(req.query);
+      // Replace req.query values with parsed (coerced) values
+      for (const key of Object.keys(req.query)) {
+        delete req.query[key];
+      }
       Object.assign(req.query, parsed);
       next();
     } catch (error) {

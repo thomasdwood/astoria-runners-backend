@@ -65,7 +65,7 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
           endLocation: template.endLocation ?? '',
           notes: template.notes ?? '',
         }
-      : { frequency: 'weekly', dayOfWeek: 2, startTime: '18:30' },
+      : { frequency: 'weekly', dayOfWeek: 2, startTime: '18:30', endDate: '' },
   });
 
   const routeIdValue = watch('routeId');
@@ -77,6 +77,7 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
   const startLocationValue = watch('startLocation') ?? '';
 
   const [startLocOpen, setStartLocOpen] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(!!endDateValue);
 
   const filteredSuggestions = (locationSuggestions ?? []).filter(
     (s) => s.toLowerCase().includes(startLocationValue.toLowerCase()) && s !== startLocationValue
@@ -200,35 +201,65 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="endDate">End Date (optional)</Label>
-        <Input id="endDate" type="date" {...register('endDate')} />
+        {showEndDate ? (
+          <>
+            <Label htmlFor="endDate">End Date</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="endDate"
+                type="date"
+                value={endDateValue ?? ''}
+                onChange={(e) => setValue('endDate', e.target.value, { shouldDirty: true })}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setValue('endDate', '', { shouldDirty: true });
+                  setShowEndDate(false);
+                }}
+              >
+                Remove
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEndDate(true)}
+          >
+            + Add End Date
+          </Button>
+        )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 relative">
         <Label htmlFor="startLocation">Start Location (optional)</Label>
-        <Popover open={startLocOpen && filteredSuggestions.length > 0} onOpenChange={setStartLocOpen}>
-          <PopoverTrigger asChild>
-            <Input
-              id="startLocation"
-              {...register('startLocation')}
-              onFocus={() => setStartLocOpen(true)}
-              onChange={(e) => {
-                register('startLocation').onChange(e);
-                setStartLocOpen(true);
-              }}
-              autoComplete="off"
-            />
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-0 w-[var(--radix-popover-trigger-width)]"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
+        <Input
+          id="startLocation"
+          {...register('startLocation')}
+          onFocus={() => setStartLocOpen(true)}
+          onBlur={() => {
+            setTimeout(() => setStartLocOpen(false), 150);
+          }}
+          onChange={(e) => {
+            register('startLocation').onChange(e);
+            setStartLocOpen(true);
+          }}
+          autoComplete="off"
+        />
+        {startLocOpen && filteredSuggestions.length > 0 && (
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md">
             {filteredSuggestions.map((s) => (
               <button
                 key={s}
                 type="button"
                 className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   setValue('startLocation', s);
                   setStartLocOpen(false);
                 }}
@@ -236,8 +267,8 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
                 {s}
               </button>
             ))}
-          </PopoverContent>
-        </Popover>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

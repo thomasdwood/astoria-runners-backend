@@ -104,31 +104,31 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 relative">
         <Label htmlFor="startLocation">Start Location</Label>
-        <Popover open={startLocOpen && filteredSuggestions.length > 0} onOpenChange={setStartLocOpen}>
-          <PopoverTrigger asChild>
-            <Input
-              id="startLocation"
-              {...register('startLocation')}
-              onFocus={() => setStartLocOpen(true)}
-              onChange={(e) => {
-                register('startLocation').onChange(e);
-                setStartLocOpen(true);
-              }}
-              autoComplete="off"
-            />
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-0 w-[var(--radix-popover-trigger-width)]"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
+        <Input
+          id="startLocation"
+          {...register('startLocation')}
+          onFocus={() => setStartLocOpen(true)}
+          onBlur={() => {
+            // Delay to allow click on suggestion
+            setTimeout(() => setStartLocOpen(false), 150);
+          }}
+          onChange={(e) => {
+            register('startLocation').onChange(e);
+            setStartLocOpen(true);
+          }}
+          autoComplete="off"
+        />
+        {startLocOpen && filteredSuggestions.length > 0 && (
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md">
             {filteredSuggestions.map((s) => (
               <button
                 key={s}
                 type="button"
                 className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
                   setValue('startLocation', s);
                   setStartLocOpen(false);
                 }}
@@ -136,8 +136,8 @@ export function RouteForm({ route, onSubmit, isSubmitting }: RouteFormProps) {
                 {s}
               </button>
             ))}
-          </PopoverContent>
-        </Popover>
+          </div>
+        )}
         {errors.startLocation && (
           <p className="text-sm text-destructive">{errors.startLocation.message}</p>
         )}

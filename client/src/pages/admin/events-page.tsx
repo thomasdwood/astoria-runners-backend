@@ -315,7 +315,12 @@ export function EventsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span>{ce.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span>{ce.title}</span>
+                        {ce.category && (
+                          <CategoryBadge category={{ name: ce.category, color: ce.categoryColor ?? 'slate', icon: ce.categoryIcon }} />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="gap-1">
