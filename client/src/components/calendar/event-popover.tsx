@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_COLOR_MAP } from '@/lib/constants';
-import { Clock, MapPin, FileText } from 'lucide-react';
+import { Clock, MapPin, FileText, AlertCircle } from 'lucide-react';
 import type { CalendarEvent } from '@/types';
 
 interface EventPopoverProps {
@@ -16,6 +16,12 @@ export function EventPopover({ event, children }: EventPopoverProps) {
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="space-y-3">
+          {event.isCancelled && (
+            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>This event has been cancelled</span>
+            </div>
+          )}
           <div>
             <h4 className="font-semibold">{event.title}</h4>
             <Badge variant="outline" className={`${colors.badge} mt-1`}>
@@ -35,14 +41,14 @@ export function EventPopover({ event, children }: EventPopoverProps) {
                 <span>{event.endLocation}</span>
               </div>
             )}
-            {event.notes && (
+            {event.notes && !event.isCancelled && (
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <span>{event.notes}</span>
               </div>
             )}
           </div>
-          {event.isRecurring && (
+          {event.isRecurring && !event.isCancelled && (
             <p className="text-xs text-muted-foreground">Recurring event</p>
           )}
         </div>

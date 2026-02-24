@@ -46,6 +46,7 @@ export function MonthGrid({ weeks }: MonthGridProps) {
                         <div
                           className={cn(
                             'flex items-center gap-1 rounded px-1 py-0.5 text-xs truncate hover:bg-muted/80 transition-colors',
+                            event.isCancelled && 'opacity-50'
                           )}
                         >
                           <span
@@ -54,7 +55,9 @@ export function MonthGrid({ weeks }: MonthGridProps) {
                               dotColor
                             )}
                           />
-                          <span className="truncate">{event.title}</span>
+                          <span className={cn('truncate', event.isCancelled && 'line-through')}>
+                            {event.title}
+                          </span>
                         </div>
                       </button>
                     </EventPopover>

@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_COLOR_MAP } from '@/lib/constants';
 import { Clock, MapPin } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 
 interface ListViewProps {
@@ -31,15 +32,23 @@ export function ListView({ groupedByDate }: ListViewProps) {
               return (
                 <div
                   key={`${event.id ?? event.recurringTemplateId}-${i}`}
-                  className="flex items-start gap-4 rounded-lg border p-4"
+                  className={cn(
+                    'flex items-start gap-4 rounded-lg border p-4',
+                    event.isCancelled && 'opacity-50'
+                  )}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{event.title}</span>
+                      <span className={cn('font-medium', event.isCancelled && 'line-through')}>
+                        {event.title}
+                      </span>
                       <Badge variant="outline" className={colors.badge}>
                         {event.categoryIcon ? `${event.categoryIcon} ` : ''}{event.category}
                       </Badge>
-                      {event.isRecurring && (
+                      {event.isCancelled && (
+                        <Badge variant="destructive">Cancelled</Badge>
+                      )}
+                      {event.isRecurring && !event.isCancelled && (
                         <span className="text-xs text-muted-foreground">(recurring)</span>
                       )}
                     </div>
@@ -55,7 +64,7 @@ export function ListView({ groupedByDate }: ListViewProps) {
                         </span>
                       )}
                     </div>
-                    {event.notes && (
+                    {event.notes && !event.isCancelled && (
                       <p className="text-sm text-muted-foreground mt-1">{event.notes}</p>
                     )}
                   </div>
