@@ -27,6 +27,8 @@ export async function createEvent(data: CreateEventInput) {
       notes: data.notes,
       isCancelled: data.isCancelled ?? false,
       recurringTemplateId: data.recurringTemplateId ?? null,
+      hostId: data.hostId ?? null,
+      meetupUrl: data.meetupUrl === '' ? null : (data.meetupUrl ?? null),
     })
     .returning();
 
@@ -116,6 +118,12 @@ export async function updateEvent(id: number, data: UpdateEventInput) {
   }
   if (fields.notes !== undefined) {
     updateFields.notes = fields.notes;
+  }
+  if (fields.hostId !== undefined) {
+    updateFields.hostId = fields.hostId;  // null is valid (clears host)
+  }
+  if (fields.meetupUrl !== undefined) {
+    updateFields.meetupUrl = fields.meetupUrl === '' ? null : fields.meetupUrl;
   }
 
   const [updated] = await db
