@@ -1,7 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_COLOR_MAP } from '@/lib/constants';
-import { Clock, MapPin, FileText, AlertCircle } from 'lucide-react';
+import { Clock, MapPin, FileText, AlertCircle, User, ExternalLink } from 'lucide-react';
 import type { CalendarEvent } from '@/types';
 
 interface EventPopoverProps {
@@ -45,6 +45,38 @@ export function EventPopover({ event, children }: EventPopoverProps) {
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <span>{event.notes}</span>
+              </div>
+            )}
+            {event.hostName && (
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span>{event.hostName}</span>
+              </div>
+            )}
+            {event.meetupUrl && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href={event.meetupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline underline-offset-2 hover:text-primary/80"
+                >
+                  View on Meetup
+                </a>
+              </div>
+            )}
+            {event.stravaUrl && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href={event.stravaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline underline-offset-2 hover:text-primary/80"
+                >
+                  View route on Strava
+                </a>
               </div>
             )}
           </div>
