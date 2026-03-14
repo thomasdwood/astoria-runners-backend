@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-02-PLAN.md (hosts API, meetup-url endpoint, calendar pipeline)
-last_updated: "2026-03-14T19:11:42.771Z"
+stopped_at: Completed 05-05-PLAN.md (EventPopover host, meetup link, strava link)
+last_updated: "2026-03-14T19:13:59.573Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 22
-  completed_plans: 19
+  completed_plans: 20
   percent: 82
 ---
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 82%
 | Phase 04-integrations-export P02 | 3 | 2 tasks | 9 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P01 | 15 | 2 tasks | 13 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P02 | 6 | 2 tasks | 13 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P05 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -167,6 +168,7 @@ Recent decisions affecting current work:
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: hosts.ts has no reverse relations to avoid circular imports with events.ts and recurringTemplates.ts
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: hostsService.deleteHost allows deletion without blocking — FK ON DELETE SET NULL cascades to events and recurring_templates automatically
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: cancel/restore endpoints bypass version increment (metadata pattern); virtual recurring instances carry host from template via host: true in template queries
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: EventPopover conditional rows use short-circuit && rendering — host/meetup/strava rows only appear when field is non-null; external links use target=_blank + rel=noopener noreferrer
 
 ### Pending Todos
 
@@ -204,8 +206,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:11:42.769Z
-Stopped at: Completed 05-02-PLAN.md (hosts API, meetup-url endpoint, calendar pipeline)
+Last session: 2026-03-14T19:13:56.567Z
+Stopped at: Completed 05-05-PLAN.md (EventPopover host, meetup link, strava link)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
