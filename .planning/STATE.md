@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-05-PLAN.md (EventPopover host, meetup link, strava link)
-last_updated: "2026-03-14T19:13:59.573Z"
+stopped_at: Completed 05-03-PLAN.md (hosts management UI, meetup template editor, MeetupExportPopover URL input)
+last_updated: "2026-03-14T19:17:53.936Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 82
 ---
 
@@ -63,6 +63,7 @@ Progress: [████████░░] 82%
 | Phase 05-hosts-meetup-workflow-calendar-polish P01 | 15 | 2 tasks | 13 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P02 | 6 | 2 tasks | 13 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P05 | 1 | 1 tasks | 1 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P03 | 8 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -169,6 +170,8 @@ Recent decisions affecting current work:
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: hostsService.deleteHost allows deletion without blocking — FK ON DELETE SET NULL cascades to events and recurring_templates automatically
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: cancel/restore endpoints bypass version increment (metadata pattern); virtual recurring instances carry host from template via host: true in template queries
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: EventPopover conditional rows use short-circuit && rendering — host/meetup/strava rows only appear when field is non-null; external links use target=_blank + rel=noopener noreferrer
+- [Phase 05-03]: MeetupExportPopover self-contains useUpdateMeetupUrl — parent (events-page) no longer manages URL saving, removes onTogglePosted callback prop
+- [Phase 05-03]: Always show MeetupExportPopover button for DB events (badge shown alongside when URL set) to allow editing/clearing URL at any time
 
 ### Pending Todos
 
@@ -206,8 +209,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:13:56.567Z
-Stopped at: Completed 05-05-PLAN.md (EventPopover host, meetup link, strava link)
+Last session: 2026-03-14T19:17:48.655Z
+Stopped at: Completed 05-03-PLAN.md (hosts management UI, meetup template editor, MeetupExportPopover URL input)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
