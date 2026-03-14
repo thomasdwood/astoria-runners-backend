@@ -8,6 +8,8 @@ export const createEventSchema = z.object({
   notes: z.string().nullable().optional(),
   isCancelled: z.boolean().optional(),
   recurringTemplateId: z.number().int().positive().optional(),
+  hostId: z.number().int().nullable().optional(),
+  meetupUrl: z.string().url().nullable().optional().or(z.literal('')),
 });
 
 export const updateEventSchema = z.object({
@@ -16,6 +18,8 @@ export const updateEventSchema = z.object({
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').optional(),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').optional(),
   notes: z.string().optional(),
+  hostId: z.number().int().nullable().optional(),
+  meetupUrl: z.string().url().nullable().optional().or(z.literal('')),
   version: z.number().int().nonnegative('Version must be a non-negative integer'),
 });
 
