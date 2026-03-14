@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Completed 05-01-PLAN.md (Phase 5 schema migration)
+last_updated: "2026-03-14T19:03:40.621Z"
+last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
+progress:
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 22
+  completed_plans: 18
+  percent: 82
+---
+
 # Project State
 
 ## Project Reference
@@ -9,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 ## Current Position
 
-Phase: 4 of 4 (Integrations & Export)
-Plan: 3 of 3 in current phase (gap closure complete)
-Status: Complete
-Last activity: 2026-02-24 — Completed 04-03-PLAN.md (gap closure: stravaUrl input field in route form)
+Phase: 4 of 5 (Integrations & Export — complete, Phase 5 planned)
+Plan: Phase 5 not yet started
+Status: Ready to plan Phase 5
+Last activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 
-Progress: [██████████] Phase 4 Plan 3/3 complete
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
@@ -44,6 +60,7 @@ Progress: [██████████] Phase 4 Plan 3/3 complete
 | Phase 03.1-refinements-missing-features P05 | 6 | 2 tasks | 8 files |
 | Phase 03.1-refinements-missing-features P06 | 14 | 2 tasks | 12 files |
 | Phase 04-integrations-export P02 | 3 | 2 tasks | 9 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P01 | 15 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -144,6 +161,9 @@ Recent decisions affecting current work:
 - [Phase 03.1-06]: Conflict detection uses time-of-day windows (morning <12, afternoon 12-17, evening 17+) not exact time matching
 - [Phase 04-02]: Native input[type=checkbox] used instead of Radix Checkbox — @radix-ui/react-checkbox not installed
 - [Phase 04-02]: Meetup badge shown when postedToMeetup=true; popover trigger shown otherwise — removes need for Switch toggle
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: Wrote migration SQL manually — drizzle-kit 0.31.x cannot resolve .js ESM imports in CJS mode
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: postedToMeetup boolean replaced by meetupUrl varchar(500) — URL presence indicates posted status
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: hosts.ts has no reverse relations to avoid circular imports with events.ts and recurringTemplates.ts
 
 ### Pending Todos
 
@@ -181,10 +201,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-24
-Stopped at: Completed 04-03-PLAN.md (gap closure). All Phase 4 plans executed — stravaUrl UI field closes the last verification gap.
-Next step: Phase 4 verification, then phase completion.
-Resume file: .planning/phases/04-integrations-export/04-03-SUMMARY.md
+Last session: 2026-03-14T19:03:40.619Z
+Stopped at: Completed 05-01-PLAN.md (Phase 5 schema migration)
+Next step: Update README → /gsd:complete-milestone → git push
+Resume file: None
 
 **Verification Status:**
 - ✅ UAT complete: 16/18 passed, 1 skipped (cancel→restore dependency), 0 open issues

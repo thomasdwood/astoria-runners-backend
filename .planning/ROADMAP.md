@@ -106,17 +106,41 @@ Plans:
 - [ ] 04-02-PLAN.md -- Meetup export updates (stravaUrl on routes, format toggle, Popover UI, Phase 3.1 data model)
 - [ ] 04-03-PLAN.md -- Gap closure: add stravaUrl input field to route form UI
 
+### Phase 5: Hosts, Meetup Workflow & Calendar Polish
+**Goal**: Organizers can assign a run host, track Meetup posting via URL, configure description templates, and see richer event detail on the public calendar
+**Depends on**: Phase 4
+**Success Criteria** (what must be TRUE):
+  1. Events can have a host assigned from a managed hosts list
+  2. Recurring templates can have a default host
+  3. Admins can add/remove hosts from the settings page
+  4. Meetup URL replaces the "posted to Meetup" checkbox — posting status is derived from URL presence
+  5. Default Meetup description template is configurable from settings with variable substitution
+  6. Calendar event overlay shows host, Meetup link, and Strava route link when set
+  7. Route dropdown on event form is filterable by category
+  8. Cancel/restore actions work for one-off events (not just recurring instances)
+  9. DB migration state is clean — all schema changes tracked via drizzle migrations
+**Plans**: 5 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Schema & migrations: hosts table, meetupUrl on events (replaces postedToMeetup), hostId on events/recurring_templates, drizzle migration cleanup
+- [ ] 05-02-PLAN.md — Backend: hosts service + CRUD API, event service updates (meetupUrl, hostId), meetup_description_template setting, calendar API exposes host/meetupUrl/stravaUrl
+- [ ] 05-03-PLAN.md — Settings page: hosts management UI (add/remove, future email/admin path), meetup description template editor with variable reference
+- [ ] 05-04-PLAN.md — Event form: host selector dropdown, meetup URL input field, route dropdown category filter, cancel/restore for one-off events
+- [ ] 05-05-PLAN.md — Calendar overlay: display host, Meetup link, and Strava route link on event detail popover
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Authentication | 3/3 | ✓ Complete | 2026-02-13 |
 | 2. Route Management | 2/2 | ✓ Complete | 2026-02-13 |
 | 3. Event Scheduling & Public Calendar | 3/3 | ✓ Complete | 2026-02-13 |
-| 4. Integrations & Export | 0/2 | Not started | - |
+| 03.1. Refinements & Missing Features | 6/6 | ✓ Complete | 2026-02-24 |
+| 4. Integrations & Export | 3/3 | ✓ Complete | 2026-02-24 |
+| 5. Hosts, Meetup Workflow & Calendar Polish | 1/5 | In Progress|  |
 
 ---
 *Roadmap created: 2026-02-12*
