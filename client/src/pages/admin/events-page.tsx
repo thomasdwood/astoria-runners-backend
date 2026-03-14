@@ -8,6 +8,8 @@ import {
   useCancelRecurringInstance,
   useExcludeRecurringDate,
   useRestoreCancelledInstance,
+  useCancelEvent,
+  useRestoreEvent,
 } from '@/hooks/use-events';
 import { useCalendarList } from '@/hooks/use-calendar';
 import { ApiResponseError } from '@/lib/api';
@@ -76,6 +78,8 @@ export function EventsPage() {
   const cancelInstance = useCancelRecurringInstance();
   const excludeDate = useExcludeRecurringDate();
   const restoreInstance = useRestoreCancelledInstance();
+  const cancelEvent = useCancelEvent();
+  const restoreEvent = useRestoreEvent();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | undefined>();
@@ -90,12 +94,16 @@ export function EventsPage() {
   const rows: EventRow[] = (() => {
     const result: EventRow[] = [];
 
-    // One-off events (non-cancelled, not linked to recurring template — or all DB events)
+    // DB events (one-off and cancelled)
+    // cancelled-instance = cancelled recurring exception (recurringTemplateId set)
+    // one-off = either active or cancelled pure one-off (no recurringTemplateId, or active exception)
     if (events) {
       for (const ev of events) {
-        if (ev.isCancelled) {
+        if (ev.isCancelled && ev.recurringTemplateId !== null) {
+          // Cancelled recurring instance — restore via delete
           result.push({ kind: 'cancelled-instance', event: ev });
         } else {
+          // One-off (active or cancelled) — cancel/restore via PATCH
           result.push({ kind: 'one-off', event: ev });
         }
       }
@@ -140,7 +148,7 @@ export function EventsPage() {
     setDialogOpen(true);
   }
 
-  async function handleSubmit(data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string }) {
+  async function handleSubmit(data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string; hostId?: number | null; meetupUrl?: string | null }) {
     try {
       if (editingEvent) {
         await updateEvent.mutateAsync({ id: editingEvent.id, version: editingEvent.version, ...data });
@@ -391,28 +399,33 @@ export function EventsPage() {
                 );
               }
 
-              // kind === 'one-off'
+              // kind === 'one-off' (active or cancelled pure one-off)
               const ev = row.event;
+              const isCancelled = ev.isCancelled;
               return (
-                <TableRow key={`ev-${ev.id}`}>
+                <TableRow key={`ev-${ev.id}`} className={isCancelled ? 'opacity-60' : undefined}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">
+                      <div className={`font-medium${isCancelled ? ' line-through' : ''}`}>
                         {format(new Date(ev.startDateTime), 'MMM d, yyyy')}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={`text-sm text-muted-foreground${isCancelled ? ' line-through' : ''}`}>
                         {format(new Date(ev.startDateTime), 'h:mm a')}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span>{ev.route.name}</span>
+                      <span className={isCancelled ? 'line-through' : undefined}>{ev.route.name}</span>
                       <CategoryBadge category={ev.route.category} />
                     </div>
                   </TableCell>
                   <TableCell>
-                    {ev.recurringTemplateId ? (
+                    {isCancelled ? (
+                      <Badge variant="destructive" className="gap-1">
+                        Cancelled
+                      </Badge>
+                    ) : ev.recurringTemplateId ? (
                       <Badge variant="outline" className="gap-1">
                         <Repeat className="h-3 w-3" />
                         Exception
@@ -422,27 +435,63 @@ export function EventsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      {ev.meetupUrl && (
-                        <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
-                          <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-                          Meetup
-                        </Badge>
-                      )}
-                      <MeetupExportPopover
-                        eventId={ev.id}
-                        meetupUrl={ev.meetupUrl}
-                      />
-                    </div>
+                    {isCancelled ? (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        {ev.meetupUrl && (
+                          <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
+                            <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
+                            Meetup
+                          </Badge>
+                        )}
+                        <MeetupExportPopover
+                          eventId={ev.id}
+                          meetupUrl={ev.meetupUrl}
+                        />
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(ev)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(ev)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {isCancelled ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Restore event"
+                            onClick={async () => {
+                              await restoreEvent.mutateAsync(ev.id);
+                              toast.success('Event restored');
+                            }}
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(ev)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(ev)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Cancel event"
+                            onClick={async () => {
+                              await cancelEvent.mutateAsync(ev.id);
+                              toast.success('Event cancelled');
+                            }}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(ev)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
