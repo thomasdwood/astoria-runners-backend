@@ -5,7 +5,6 @@ import {
   useCreateEvent,
   useUpdateEvent,
   useDeleteEvent,
-  useUpdateMeetupUrl,
   useCancelRecurringInstance,
   useExcludeRecurringDate,
   useRestoreCancelledInstance,
@@ -74,7 +73,6 @@ export function EventsPage() {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const deleteEvent = useDeleteEvent();
-  const updateMeetupUrl = useUpdateMeetupUrl();
   const cancelInstance = useCancelRecurringInstance();
   const excludeDate = useExcludeRecurringDate();
   const restoreInstance = useRestoreCancelledInstance();
@@ -235,17 +233,6 @@ export function EventsPage() {
     setRestoreTarget(undefined);
   }
 
-  async function handleMeetupToggle(event: Event) {
-    try {
-      // Clear meetupUrl to mark as not posted
-      await updateMeetupUrl.mutateAsync({
-        id: event.id,
-        meetupUrl: null,
-      });
-    } catch (err) {
-      if (err instanceof ApiResponseError) toast.error(err.message);
-    }
-  }
 
   const editingDefaultValues = editingInstance
     ? {
@@ -435,18 +422,18 @@ export function EventsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {ev.meetupUrl ? (
-                      <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
-                        <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-                        Meetup
-                      </Badge>
-                    ) : (
+                    <div className="flex items-center gap-1">
+                      {ev.meetupUrl && (
+                        <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
+                          <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
+                          Meetup
+                        </Badge>
+                      )}
                       <MeetupExportPopover
                         eventId={ev.id}
                         meetupUrl={ev.meetupUrl}
-                        onTogglePosted={() => handleMeetupToggle(ev)}
                       />
-                    )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

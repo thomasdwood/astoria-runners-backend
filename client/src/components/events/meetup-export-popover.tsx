@@ -1,21 +1,66 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { api } from '@/lib/api';
+import { useSettings } from '@/hooks/use-settings';
+import { useUpdateMeetupUrl } from '@/hooks/use-events';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import type { CalendarEvent } from '@/types';
 
 interface MeetupExportPopoverProps {
   eventId?: number;
   meetupUrl?: string | null;
-  onTogglePosted?: () => void;
   calendarEvent?: CalendarEvent;
 }
 
-function generateClientSideDescription(ce: CalendarEvent): string {
+function applyTemplate(template: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce(
+    (result, [key, value]) => result.replaceAll(`{{${key}}}`, value),
+    template
+  );
+}
+
+const DEFAULT_TEMPLATE = `Join us for a {{routeName}} run!
+
+Date: {{date}}
+Start: {{startLocation}}{{endLocationLine}}
+Distance: {{distance}} miles{{hostLine}}{{routeLinkLine}}{{notesBlock}}
+
+See you there!`;
+
+function generateClientSideDescription(ce: CalendarEvent, templateOverride?: string): string {
   const dateLabel = format(new Date(ce.startDateTime), 'EEEE, MMMM d, yyyy h:mm a');
+
+  if (templateOverride) {
+    const endLocationLine =
+      ce.endLocation && ce.endLocation !== ce.startLocation
+        ? `\nEnd: ${ce.endLocation}`
+        : '';
+    const hostLine = ce.hostName ? `\nHost: ${ce.hostName}` : '';
+    const routeLinkLine = ce.stravaUrl ? `\nRoute: ${ce.stravaUrl}` : '';
+    const notesBlock = ce.notes ? `\n\n${ce.notes}` : '';
+
+    return applyTemplate(templateOverride, {
+      routeName: ce.title,
+      distance: '',
+      startLocation: ce.startLocation ?? '',
+      endLocation: ce.endLocation ?? '',
+      host: ce.hostName ?? '',
+      routeLink: ce.stravaUrl ?? '',
+      notes: ce.notes ?? '',
+      date: dateLabel,
+      endLocationLine,
+      hostLine,
+      routeLinkLine,
+      notesBlock,
+    }).trim();
+  }
+
+  // Default generation
   let description = `Join us for a ${ce.category} on ${ce.title}!\n\n`;
   description += `Date: ${dateLabel}\n`;
 
@@ -38,7 +83,6 @@ function generateClientSideDescription(ce: CalendarEvent): string {
 export function MeetupExportPopover({
   eventId,
   meetupUrl,
-  onTogglePosted,
   calendarEvent,
 }: MeetupExportPopoverProps) {
   const [open, setOpen] = useState(false);
@@ -46,11 +90,17 @@ export function MeetupExportPopover({
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [urlInput, setUrlInput] = useState(meetupUrl ?? '');
+  const [urlSaved, setUrlSaved] = useState(false);
+
+  const { data: settings } = useSettings();
+  const savedTemplate = settings?.find((s) => s.key === 'meetup_description_template')?.value;
+  const updateMeetupUrl = useUpdateMeetupUrl();
 
   async function loadDescription(fmt: 'plain' | 'html') {
     if (calendarEvent) {
       // Client-side generation for virtual recurring instances
-      setDescription(generateClientSideDescription(calendarEvent));
+      setDescription(generateClientSideDescription(calendarEvent, savedTemplate));
       return;
     }
 
@@ -72,6 +122,8 @@ export function MeetupExportPopover({
     setOpen(isOpen);
     if (isOpen) {
       setCopied(false);
+      setUrlInput(meetupUrl ?? '');
+      setUrlSaved(false);
       loadDescription(descFormat);
     }
   }
@@ -85,6 +137,18 @@ export function MeetupExportPopover({
     await navigator.clipboard.writeText(description);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleSaveUrl() {
+    if (!eventId) return;
+    try {
+      await updateMeetupUrl.mutateAsync({ id: eventId, meetupUrl: urlInput || null });
+      setUrlSaved(true);
+      toast.success(urlInput ? 'Meetup URL saved' : 'Meetup URL cleared');
+      setTimeout(() => setUrlSaved(false), 2000);
+    } catch {
+      toast.error('Failed to save Meetup URL');
+    }
   }
 
   const isDbEvent = !!eventId && !calendarEvent;
@@ -143,18 +207,29 @@ export function MeetupExportPopover({
           )}
         </Button>
 
-        {isDbEvent && onTogglePosted !== undefined && (
-          <div className="flex items-center gap-2 pt-1 border-t">
-            <input
-              type="checkbox"
-              id="posted-to-meetup"
-              checked={!!meetupUrl}
-              onChange={() => onTogglePosted()}
-              className="h-4 w-4 rounded border-gray-300 cursor-pointer"
-            />
-            <Label htmlFor="posted-to-meetup" className="text-sm cursor-pointer">
-              Posted to Meetup
+        {isDbEvent && (
+          <div className="space-y-2 pt-1 border-t">
+            <Label htmlFor="meetup-url" className="text-sm">
+              Meetup URL
             </Label>
+            <div className="flex gap-2">
+              <Input
+                id="meetup-url"
+                type="url"
+                placeholder="https://www.meetup.com/..."
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <Button
+                size="sm"
+                className="h-8 shrink-0"
+                onClick={handleSaveUrl}
+                disabled={updateMeetupUrl.isPending}
+              >
+                {urlSaved ? <Check className="h-3 w-3" /> : 'Save'}
+              </Button>
+            </div>
           </div>
         )}
       </PopoverContent>

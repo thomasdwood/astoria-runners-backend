@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/use-categories';
+import { useHosts, useCreateHost, useDeleteHost } from '@/hooks/use-hosts';
 import { useSettings, useUpdateSetting } from '@/hooks/use-settings';
 import { CategoryForm } from '@/components/categories/category-form';
 import { PageHeader } from '@/components/shared/page-header';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -34,15 +36,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { CATEGORY_COLOR_MAP } from '@/lib/constants';
-import { Plus, Pencil, Trash2, Tags } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tags, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Category } from '@/types';
+import type { Category, Host } from '@/types';
 
 export function SettingsPage() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+
+  const { data: hosts, isLoading: hostsLoading } = useHosts();
+  const createHost = useCreateHost();
+  const deleteHost = useDeleteHost();
 
   const { data: settings, isLoading: settingsLoading } = useSettings();
   const updateSetting = useUpdateSetting();
@@ -51,6 +57,7 @@ export function SettingsPage() {
   const discordNotificationsRaw = settings?.find((s) => s.key === 'discord_notifications_enabled')?.value;
   // Default to enabled (true) if setting doesn't exist
   const discordNotificationsEnabled = discordNotificationsRaw !== 'false';
+  const meetupTemplate = settings?.find((s) => s.key === 'meetup_description_template')?.value ?? '';
 
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
@@ -58,10 +65,24 @@ export function SettingsPage() {
   const [locationInput, setLocationInput] = useState('');
   const [locationInitialized, setLocationInitialized] = useState(false);
 
+  const [hostDialogOpen, setHostDialogOpen] = useState(false);
+  const [hostNameInput, setHostNameInput] = useState('');
+  const [hostEmailInput, setHostEmailInput] = useState('');
+  const [deleteHostTarget, setDeleteHostTarget] = useState<Host | undefined>();
+
+  const [templateInput, setTemplateInput] = useState('');
+  const [templateInitialized, setTemplateInitialized] = useState(false);
+
   // Initialize locationInput from fetched default when first available
   if (!settingsLoading && !locationInitialized) {
     setLocationInput(defaultStartLocation ?? '');
     setLocationInitialized(true);
+  }
+
+  // Initialize templateInput once settings load
+  if (!templateInitialized && meetupTemplate) {
+    setTemplateInput(meetupTemplate);
+    setTemplateInitialized(true);
   }
 
   function openCreate() {
@@ -114,6 +135,42 @@ export function SettingsPage() {
       toast.success(`Discord notifications ${enabled ? 'enabled' : 'disabled'}`);
     } catch {
       toast.error('Failed to update Discord notification setting');
+    }
+  }
+
+  async function handleCreateHost() {
+    if (!hostNameInput.trim()) return;
+    try {
+      await createHost.mutateAsync({
+        name: hostNameInput.trim(),
+        email: hostEmailInput.trim() || null,
+      });
+      toast.success('Host created');
+      setHostDialogOpen(false);
+      setHostNameInput('');
+      setHostEmailInput('');
+    } catch {
+      toast.error('Failed to create host');
+    }
+  }
+
+  async function handleDeleteHost() {
+    if (!deleteHostTarget) return;
+    try {
+      await deleteHost.mutateAsync(deleteHostTarget.id);
+      toast.success('Host deleted');
+    } catch {
+      toast.error('Failed to delete host');
+    }
+    setDeleteHostTarget(undefined);
+  }
+
+  async function handleSaveTemplate() {
+    try {
+      await updateSetting.mutateAsync({ key: 'meetup_description_template', value: templateInput });
+      toast.success('Template saved');
+    } catch {
+      toast.error('Failed to save template');
     }
   }
 
@@ -196,6 +253,101 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Hosts Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Hosts
+              </CardTitle>
+              <CardDescription>Manage run hosts. Hosts can be assigned to events.</CardDescription>
+            </div>
+            <Button onClick={() => setHostDialogOpen(true)} size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Host
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {hostsLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          ) : !hosts?.length ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No hosts yet. Add your first host to get started.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {hosts.map((host) => (
+                  <TableRow key={host.id}>
+                    <TableCell className="font-medium">{host.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{host.email ?? '—'}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteHostTarget(host)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Meetup Description Template Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Meetup Description Template</CardTitle>
+          <CardDescription>
+            Template used when generating Meetup event descriptions. Use {'{{variable}}'} placeholders.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="meetupTemplate">Template</Label>
+            <Textarea
+              id="meetupTemplate"
+              rows={8}
+              value={templateInput}
+              onChange={(e) => setTemplateInput(e.target.value)}
+              placeholder="Enter your Meetup description template..."
+              disabled={settingsLoading}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p className="font-medium">Available variables:</p>
+            <p>
+              <code>{'{{routeName}}'}</code>, <code>{'{{distance}}'}</code>,{' '}
+              <code>{'{{startLocation}}'}</code>, <code>{'{{endLocation}}'}</code>,{' '}
+              <code>{'{{host}}'}</code>, <code>{'{{routeLink}}'}</code>,{' '}
+              <code>{'{{notes}}'}</code>
+            </p>
+          </div>
+          <Button
+            onClick={handleSaveTemplate}
+            disabled={updateSetting.isPending || settingsLoading}
+          >
+            {updateSetting.isPending ? 'Saving...' : 'Save Template'}
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Default Start Location Section */}
       <Card>
         <CardHeader>
@@ -268,7 +420,7 @@ export function SettingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Category Confirmation */}
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(undefined)}
@@ -284,6 +436,77 @@ export function SettingsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteCategory}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Host Dialog */}
+      <Dialog
+        open={hostDialogOpen}
+        onOpenChange={(open) => {
+          setHostDialogOpen(open);
+          if (!open) {
+            setHostNameInput('');
+            setHostEmailInput('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Host</DialogTitle>
+            <DialogDescription>Add a new run host.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="hostName">Name <span className="text-destructive">*</span></Label>
+              <Input
+                id="hostName"
+                placeholder="Host name"
+                value={hostNameInput}
+                onChange={(e) => setHostNameInput(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hostEmail">Email <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Input
+                id="hostEmail"
+                type="email"
+                placeholder="host@example.com"
+                value={hostEmailInput}
+                onChange={(e) => setHostEmailInput(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setHostDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateHost}
+                disabled={!hostNameInput.trim() || createHost.isPending}
+              >
+                {createHost.isPending ? 'Adding...' : 'Add Host'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Host Confirmation */}
+      <AlertDialog
+        open={!!deleteHostTarget}
+        onOpenChange={(open) => !open && setDeleteHostTarget(undefined)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Host</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteHostTarget?.name}&quot;?
+              This will remove the host from any assigned events.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteHost}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
