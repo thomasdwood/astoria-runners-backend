@@ -42,7 +42,7 @@ export interface Event {
   endLocation: string | null;
   notes: string | null;
   isCancelled: boolean;
-  postedToMeetup: boolean;
+  meetupUrl: string | null;
   version: number;
   createdAt: string;
   updatedAt: string;

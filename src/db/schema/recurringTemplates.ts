@@ -1,6 +1,7 @@
 import { pgTable, serial, integer, varchar, text, boolean, timestamp } from 'drizzle-orm/pg-core';
 import { InferSelectModel, InferInsertModel, relations } from 'drizzle-orm';
 import { routes } from './routes.js';
+import { hosts } from './hosts.js';
 
 export const recurringTemplates = pgTable('recurring_templates', {
   id: serial('id').primaryKey(),
@@ -16,6 +17,7 @@ export const recurringTemplates = pgTable('recurring_templates', {
   endLocation: varchar('end_location', { length: 200 }),
   excludedDates: text('excluded_dates'), // nullable, JSON array of ISO date strings e.g. '["2026-03-04","2026-03-11"]'
   notes: text('notes'),
+  hostId: integer('host_id').references(() => hosts.id, { onDelete: 'set null' }),
   isActive: boolean('is_active').notNull().default(true),
   version: integer('version').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -26,6 +28,10 @@ export const recurringTemplatesRelations = relations(recurringTemplates, ({ one 
   route: one(routes, {
     fields: [recurringTemplates.routeId],
     references: [routes.id],
+  }),
+  host: one(hosts, {
+    fields: [recurringTemplates.hostId],
+    references: [hosts.id],
   }),
 }));
 

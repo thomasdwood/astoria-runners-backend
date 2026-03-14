@@ -9,7 +9,7 @@ import type { CalendarEvent } from '@/types';
 
 interface MeetupExportPopoverProps {
   eventId?: number;
-  postedToMeetup?: boolean;
+  meetupUrl?: string | null;
   onTogglePosted?: () => void;
   calendarEvent?: CalendarEvent;
 }
@@ -37,7 +37,7 @@ function generateClientSideDescription(ce: CalendarEvent): string {
 
 export function MeetupExportPopover({
   eventId,
-  postedToMeetup,
+  meetupUrl,
   onTogglePosted,
   calendarEvent,
 }: MeetupExportPopoverProps) {
@@ -148,7 +148,7 @@ export function MeetupExportPopover({
             <input
               type="checkbox"
               id="posted-to-meetup"
-              checked={postedToMeetup ?? false}
+              checked={!!meetupUrl}
               onChange={() => onTogglePosted()}
               className="h-4 w-4 rounded border-gray-300 cursor-pointer"
             />

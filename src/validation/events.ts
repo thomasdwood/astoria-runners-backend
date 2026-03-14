@@ -103,7 +103,7 @@ export const listEventsQuerySchema = z.object({
 });
 
 export const updateMeetupStatusSchema = z.object({
-  postedToMeetup: z.boolean(),
+  meetupUrl: z.string().url('Must be a valid URL').max(500).nullable(),
 });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
@@ -113,4 +113,4 @@ export type UpdateRecurringTemplateInput = z.infer<typeof updateRecurringTemplat
 export type RecurrencePreviewInput = z.infer<typeof recurrencePreviewSchema>;
 export type CalendarQueryInput = z.infer<typeof calendarQuerySchema>;
 export type ListEventsQueryInput = z.infer<typeof listEventsQuerySchema>;
-export type UpdateMeetupStatusInput = z.infer<typeof updateMeetupStatusSchema>;
+export type UpdateMeetupUrlInput = z.infer<typeof updateMeetupStatusSchema>;

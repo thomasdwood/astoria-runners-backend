@@ -237,9 +237,10 @@ export function EventsPage() {
 
   async function handleMeetupToggle(event: Event) {
     try {
+      // Clear meetupUrl to mark as not posted
       await updateMeetupStatus.mutateAsync({
         id: event.id,
-        postedToMeetup: !event.postedToMeetup,
+        meetupUrl: null,
       });
     } catch (err) {
       if (err instanceof ApiResponseError) toast.error(err.message);
@@ -434,7 +435,7 @@ export function EventsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {ev.postedToMeetup ? (
+                    {ev.meetupUrl ? (
                       <Badge variant="secondary" className="gap-1 text-green-700 border-green-300 bg-green-50">
                         <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
                         Meetup
@@ -442,7 +443,7 @@ export function EventsPage() {
                     ) : (
                       <MeetupExportPopover
                         eventId={ev.id}
-                        postedToMeetup={ev.postedToMeetup}
+                        meetupUrl={ev.meetupUrl}
                         onTogglePosted={() => handleMeetupToggle(ev)}
                       />
                     )}

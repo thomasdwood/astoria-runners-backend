@@ -102,7 +102,7 @@ router.patch(
       return;
     }
 
-    const result = await eventService.updateMeetupStatus(id, req.body.postedToMeetup);
+    const result = await eventService.updateMeetupStatus(id, req.body.meetupUrl);
 
     if ('error' in result) {
       if (result.error === 'not_found') {

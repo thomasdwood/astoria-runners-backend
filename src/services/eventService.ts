@@ -188,11 +188,11 @@ export async function deleteEvent(id: number) {
   return { success: true as const };
 }
 
-export async function updateMeetupStatus(id: number, postedToMeetup: boolean) {
+export async function updateMeetupStatus(id: number, meetupUrl: string | null) {
   const [updated] = await db
     .update(events)
     .set({
-      postedToMeetup,
+      meetupUrl,
       updatedAt: sql`NOW()`,
     })
     .where(eq(events.id, id))

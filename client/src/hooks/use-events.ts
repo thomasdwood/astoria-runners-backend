@@ -75,8 +75,8 @@ export function useDeleteEvent() {
 export function useUpdateMeetupStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, postedToMeetup }: { id: number; postedToMeetup: boolean }) =>
-      api.patch<{ event: Event }>(`/api/events/${id}/meetup-status`, { postedToMeetup }),
+    mutationFn: ({ id, meetupUrl }: { id: number; meetupUrl: string | null }) =>
+      api.patch<{ event: Event }>(`/api/events/${id}/meetup-status`, { meetupUrl }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
