@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-01-PLAN.md (Phase 5 schema migration)
-last_updated: "2026-03-14T19:03:40.621Z"
+stopped_at: Completed 05-02-PLAN.md (hosts API, meetup-url endpoint, calendar pipeline)
+last_updated: "2026-03-14T19:11:42.771Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 22
-  completed_plans: 18
+  completed_plans: 19
   percent: 82
 ---
 
@@ -61,6 +61,7 @@ Progress: [████████░░] 82%
 | Phase 03.1-refinements-missing-features P06 | 14 | 2 tasks | 12 files |
 | Phase 04-integrations-export P02 | 3 | 2 tasks | 9 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P01 | 15 | 2 tasks | 13 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P02 | 6 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -164,6 +165,8 @@ Recent decisions affecting current work:
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: Wrote migration SQL manually — drizzle-kit 0.31.x cannot resolve .js ESM imports in CJS mode
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: postedToMeetup boolean replaced by meetupUrl varchar(500) — URL presence indicates posted status
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: hosts.ts has no reverse relations to avoid circular imports with events.ts and recurringTemplates.ts
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: hostsService.deleteHost allows deletion without blocking — FK ON DELETE SET NULL cascades to events and recurring_templates automatically
+- [Phase 05-hosts-meetup-workflow-calendar-polish]: cancel/restore endpoints bypass version increment (metadata pattern); virtual recurring instances carry host from template via host: true in template queries
 
 ### Pending Todos
 
@@ -201,8 +204,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:03:40.619Z
-Stopped at: Completed 05-01-PLAN.md (Phase 5 schema migration)
+Last session: 2026-03-14T19:11:42.769Z
+Stopped at: Completed 05-02-PLAN.md (hosts API, meetup-url endpoint, calendar pipeline)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
