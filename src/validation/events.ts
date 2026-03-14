@@ -33,6 +33,7 @@ export const createRecurringTemplateSchema = z.object({
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').nullable().optional(),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').nullable().optional(),
   notes: z.string().nullable().optional(),
+  hostId: z.number().int().nullable().optional(),
   // Deprecated: kept for backward compatibility but not used in RRULE generation
   count: z.number().int().positive('Count must be a positive integer').optional(),
 }).superRefine((data, ctx) => {
@@ -74,6 +75,7 @@ export const updateRecurringTemplateSchema = z.object({
   startLocation: z.string().max(200, 'Start location must be 200 characters or less').nullable().optional(),
   endLocation: z.string().max(200, 'End location must be 200 characters or less').nullable().optional(),
   notes: z.string().nullable().optional(),
+  hostId: z.number().int().nullable().optional(),
   version: z.number().int().nonnegative('Version must be a non-negative integer'),
 });
 

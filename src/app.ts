@@ -11,6 +11,7 @@ import routesRouter from './routes/routes.js';
 import eventsRouter from './routes/events.js';
 import recurringTemplatesRouter from './routes/recurringTemplates.js';
 import categoriesRouter from './routes/categories.js';
+import hostsRouter from './routes/hosts.js';
 import settingsRouter from './routes/settings.js';
 
 export const app = express();
@@ -44,6 +45,7 @@ app.use(publicLimiter);
 app.use('/auth', authLimiter, authRouter); // Auth routes with strict rate limit
 app.use('/calendar', calendarRouter); // Public calendar - NO auth required
 app.use('/api/categories', categoriesRouter); // Category management - public GET, auth mutations
+app.use('/api/hosts', hostsRouter); // Host management - public GET, auth mutations
 app.use('/api/settings', settingsRouter); // Settings management - public GET, auth PUT
 app.use('/api/routes', routesRouter); // Route management - auth required (handled in router)
 app.use('/api/events', eventsRouter); // Event management - auth required (handled in router)

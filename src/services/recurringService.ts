@@ -144,6 +144,7 @@ export async function createRecurringTemplate(data: CreateRecurringTemplateInput
       startLocation: data.startLocation,
       endLocation: data.endLocation,
       notes: data.notes,
+      hostId: data.hostId ?? null,
     })
     .returning();
 
@@ -238,6 +239,9 @@ export async function updateRecurringTemplate(id: number, data: UpdateRecurringT
   }
   if (fields.notes !== undefined) {
     updateFields.notes = fields.notes;
+  }
+  if (fields.hostId !== undefined) {
+    updateFields.hostId = fields.hostId ?? null;
   }
 
   // Rebuild RRULE if any recurrence-affecting fields changed
