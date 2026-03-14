@@ -119,7 +119,7 @@ Plans:
   7. Route dropdown on event form is filterable by category
   8. Cancel/restore actions work for one-off events (not just recurring instances)
   9. DB migration state is clean — all schema changes tracked via drizzle migrations
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 05-01-PLAN.md — Schema & migrations: hosts table, meetupUrl on events (replaces postedToMeetup), hostId on events/recurring_templates, drizzle migration cleanup
@@ -127,6 +127,7 @@ Plans:
 - [ ] 05-03-PLAN.md — Settings page: hosts management UI (add/remove, future email/admin path), meetup description template editor with variable reference
 - [ ] 05-04-PLAN.md — Event form: host selector dropdown, meetup URL input field, route dropdown category filter, cancel/restore for one-off events
 - [ ] 05-05-PLAN.md — Calendar overlay: display host, Meetup link, and Strava route link on event detail popover
+- [ ] 05-06-PLAN.md — Gap closure: hostId and meetupUrl persisted on event create/edit; seed script categories ON CONFLICT fix
 
 ## Progress
 
@@ -140,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Event Scheduling & Public Calendar | 3/3 | ✓ Complete | 2026-02-13 |
 | 03.1. Refinements & Missing Features | 6/6 | ✓ Complete | 2026-02-24 |
 | 4. Integrations & Export | 3/3 | ✓ Complete | 2026-02-24 |
-| 5. Hosts, Meetup Workflow & Calendar Polish | 5/5 | Complete   | 2026-03-14 |
+| 5. Hosts, Meetup Workflow & Calendar Polish | 5/6 | In Progress | 2026-03-14 |
 
 ---
 *Roadmap created: 2026-02-12*
