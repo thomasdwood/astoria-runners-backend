@@ -94,7 +94,31 @@ export function useCancelOneOffEvent() {
   });
 }
 
+// Alias for one-off event cancellation (same as useCancelOneOffEvent)
+export function useCancelEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.patch<{ event: Event }>(`/api/events/${id}/cancel`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
 export function useRestoreOneOffEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.patch<{ event: Event }>(`/api/events/${id}/restore`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+// Alias for one-off event restoration (same as useRestoreOneOffEvent)
+export function useRestoreEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.patch<{ event: Event }>(`/api/events/${id}/restore`, {}),
