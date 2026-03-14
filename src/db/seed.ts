@@ -70,17 +70,15 @@ async function seed() {
   ];
 
   for (const category of seedCategories) {
-    await db
-      .insert(categories)
-      .values(category)
-      .onConflictDoUpdate({
-        target: categories.name,
-        set: {
-          color: category.color,
-          icon: category.icon,
-          updatedAt: sql`NOW()`,
-        },
-      });
+    // Use explicit constraint name to ensure conflict resolution works regardless
+    // of whether the DB was created via migration or manual DDL
+    await pool.query(
+      `INSERT INTO categories (name, color, icon)
+       VALUES ($1, $2, $3)
+       ON CONFLICT ON CONSTRAINT "categories_name_unique"
+       DO UPDATE SET color = EXCLUDED.color, icon = EXCLUDED.icon, updated_at = NOW()`,
+      [category.name, category.color, category.icon],
+    );
     console.log(`✓ Seeded category: ${category.name} (${category.icon})`);
   }
 
