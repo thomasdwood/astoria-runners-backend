@@ -3,7 +3,10 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
 import { z } from 'zod';
-import { createEventSchema, updateEventSchema, listEventsQuerySchema, updateMeetupStatusSchema } from '../validation/events.js';
+import { createEventSchema, updateEventSchema, listEventsQuerySchema, updateMeetupUrlSchema } from '../validation/events.js';
+import { eq, sql } from 'drizzle-orm';
+import { db } from '../config/database.js';
+import { events } from '../db/schema/events.js';
 import * as eventService from '../services/eventService.js';
 import { generateMeetupDescription } from '../services/meetupExportService.js';
 
@@ -89,12 +92,13 @@ router.get(
 );
 
 /**
- * PATCH /:id/meetup-status
- * Toggle postedToMeetup status for an event
+ * PATCH /:id/meetup-url
+ * Update meetupUrl on an event (URL presence indicates posted status)
  */
 router.patch(
-  '/:id/meetup-status',
-  validateBody(updateMeetupStatusSchema),
+  '/:id/meetup-url',
+  requireAuth,
+  validateBody(updateMeetupUrlSchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
     if (isNaN(id)) {
@@ -102,16 +106,71 @@ router.patch(
       return;
     }
 
-    const result = await eventService.updateMeetupStatus(id, req.body.meetupUrl);
-
-    if ('error' in result) {
-      if (result.error === 'not_found') {
-        res.status(404).json({ error: 'Event not found' });
-        return;
-      }
+    const result = await eventService.updateMeetupUrl(id, req.body.meetupUrl);
+    if (!result) {
+      res.status(404).json({ error: 'Event not found' });
+      return;
     }
 
-    res.status(200).json({ event: result.event });
+    res.status(200).json({ event: result });
+  })
+);
+
+/**
+ * PATCH /:id/cancel
+ * Cancel a one-off event (sets isCancelled=true, bypasses version increment)
+ */
+router.patch(
+  '/:id/cancel',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid event ID' });
+      return;
+    }
+
+    const [updated] = await db
+      .update(events)
+      .set({ isCancelled: true, updatedAt: sql`NOW()` })
+      .where(eq(events.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: 'Event not found' });
+      return;
+    }
+
+    res.status(200).json({ event: updated });
+  })
+);
+
+/**
+ * PATCH /:id/restore
+ * Restore a cancelled one-off event (sets isCancelled=false, bypasses version increment)
+ */
+router.patch(
+  '/:id/restore',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid event ID' });
+      return;
+    }
+
+    const [updated] = await db
+      .update(events)
+      .set({ isCancelled: false, updatedAt: sql`NOW()` })
+      .where(eq(events.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: 'Event not found' });
+      return;
+    }
+
+    res.status(200).json({ event: updated });
   })
 );
 

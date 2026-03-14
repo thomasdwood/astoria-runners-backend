@@ -5,7 +5,7 @@ import {
   useCreateEvent,
   useUpdateEvent,
   useDeleteEvent,
-  useUpdateMeetupStatus,
+  useUpdateMeetupUrl,
   useCancelRecurringInstance,
   useExcludeRecurringDate,
   useRestoreCancelledInstance,
@@ -74,7 +74,7 @@ export function EventsPage() {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const deleteEvent = useDeleteEvent();
-  const updateMeetupStatus = useUpdateMeetupStatus();
+  const updateMeetupUrl = useUpdateMeetupUrl();
   const cancelInstance = useCancelRecurringInstance();
   const excludeDate = useExcludeRecurringDate();
   const restoreInstance = useRestoreCancelledInstance();
@@ -238,7 +238,7 @@ export function EventsPage() {
   async function handleMeetupToggle(event: Event) {
     try {
       // Clear meetupUrl to mark as not posted
-      await updateMeetupStatus.mutateAsync({
+      await updateMeetupUrl.mutateAsync({
         id: event.id,
         meetupUrl: null,
       });

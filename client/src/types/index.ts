@@ -13,6 +13,16 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface Host {
+  id: number;
+  name: string;
+  email: string | null;
+  userId: number | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Setting {
   key: string;
   value: string;
@@ -36,6 +46,8 @@ export interface Route {
 export interface Event {
   id: number;
   routeId: number;
+  hostId: number | null;
+  host: { id: number; name: string; email: string | null } | null;
   recurringTemplateId: number | null;
   startDateTime: string;
   startLocation: string | null;
@@ -52,6 +64,8 @@ export interface Event {
 export interface RecurringTemplate {
   id: number;
   routeId: number;
+  hostId: number | null;
+  host: { id: number; name: string; email: string | null } | null;
   rrule: string;
   frequency: 'weekly' | 'biweekly' | 'monthly';
   interval: number;
@@ -96,6 +110,9 @@ export interface CalendarEvent {
   isCancelled: boolean;
   isRecurring: boolean;
   recurringTemplateId: number | null;
+  hostName: string | null;
+  meetupUrl: string | null;
+  stravaUrl: string | null;
 }
 
 export interface CalendarDay {

@@ -97,7 +97,28 @@ async function seed() {
         updatedAt: sql`NOW()`,
       },
     });
-  console.log('✓ Seeded setting: default_start_location = Astoria Park Track\n');
+  console.log('✓ Seeded setting: default_start_location = Astoria Park Track');
+
+  // Seed meetup description template setting
+  const meetupTemplate = `Join us for a {{distance}} mile {{routeName}}!
+
+Start: {{startLocation}}
+End: {{endLocation}}
+{{#if host}}Host: {{host}}{{/if}}
+{{#if routeLink}}Strava Route: {{routeLink}}{{/if}}
+{{#if notes}}Notes: {{notes}}{{/if}}`;
+
+  await db
+    .insert(settings)
+    .values({ key: 'meetup_description_template', value: meetupTemplate })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: {
+        value: meetupTemplate,
+        updatedAt: sql`NOW()`,
+      },
+    });
+  console.log('✓ Seeded setting: meetup_description_template\n');
 
   // Look up category IDs for route seeding
   const categoryRows = await db.select({ id: categories.id, name: categories.name }).from(categories);

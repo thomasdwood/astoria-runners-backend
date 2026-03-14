@@ -72,13 +72,35 @@ export function useDeleteEvent() {
   });
 }
 
-export function useUpdateMeetupStatus() {
+export function useUpdateMeetupUrl() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, meetupUrl }: { id: number; meetupUrl: string | null }) =>
-      api.patch<{ event: Event }>(`/api/events/${id}/meetup-status`, { meetupUrl }),
+      api.patch<{ event: Event }>(`/api/events/${id}/meetup-url`, { meetupUrl }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+}
+
+export function useCancelOneOffEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.patch<{ event: Event }>(`/api/events/${id}/cancel`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+export function useRestoreOneOffEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.patch<{ event: Event }>(`/api/events/${id}/restore`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });
 }

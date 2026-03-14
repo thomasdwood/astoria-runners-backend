@@ -30,6 +30,9 @@ export interface CalendarEvent {
   isRecurring: boolean; // true if from recurring template
   recurringTemplateId: number | null;
   isCancelled: boolean; // true for materialized events marked as cancelled
+  hostName: string | null;
+  meetupUrl: string | null;
+  stravaUrl: string | null;
 }
 
 /**
@@ -80,6 +83,9 @@ export function formatEventForCalendar(
     isRecurring: !!event.recurringTemplateId,
     recurringTemplateId: event.recurringTemplateId || null,
     isCancelled: event.isCancelled === true,
+    hostName: event.host?.name ?? null,
+    meetupUrl: event.meetupUrl ?? null,
+    stravaUrl: event.route?.stravaUrl ?? null,
   };
 }
 

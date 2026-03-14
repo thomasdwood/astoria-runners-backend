@@ -186,6 +186,7 @@ export async function listRecurringTemplates(filters?: { categoryId?: number }) 
       route: {
         with: { category: true },
       },
+      host: true,
     },
     orderBy: (recurringTemplates, { asc }) => [
       asc(recurringTemplates.dayOfWeek),
@@ -420,6 +421,7 @@ export async function getInstancesInRange(templateId: number, rangeStart: Date, 
     where: eq(recurringTemplates.id, templateId),
     with: {
       route: true,
+      host: true,
     },
   });
 
@@ -456,6 +458,7 @@ export async function getInstancesInRange(templateId: number, rangeStart: Date, 
       endLocation: template.endLocation || null,
       notes: template.notes || null,
       route: template.route,
+      host: template.host ?? null,
     }));
 }
 
@@ -499,6 +502,7 @@ export async function getAllInstancesInRange(
         endLocation: template.endLocation || null,
         notes: template.notes || null,
         route: template.route,
+        host: template.host ?? null,
       });
     }
   }

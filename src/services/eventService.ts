@@ -188,7 +188,7 @@ export async function deleteEvent(id: number) {
   return { success: true as const };
 }
 
-export async function updateMeetupStatus(id: number, meetupUrl: string | null) {
+export async function updateMeetupUrl(id: number, meetupUrl: string | null) {
   const [updated] = await db
     .update(events)
     .set({
@@ -198,9 +198,5 @@ export async function updateMeetupStatus(id: number, meetupUrl: string | null) {
     .where(eq(events.id, id))
     .returning();
 
-  if (!updated) {
-    return { error: 'not_found' as const };
-  }
-
-  return { event: updated };
+  return updated || null;
 }
