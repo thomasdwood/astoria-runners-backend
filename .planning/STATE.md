@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: planning
 stopped_at: Completed 05-06-PLAN.md (hostId/meetupUrl schema wiring and seed categories fix)
-last_updated: "2026-03-14T19:39:37.802Z"
+last_updated: "2026-03-14T19:43:43.082Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
