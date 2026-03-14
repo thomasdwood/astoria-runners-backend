@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-04-PLAN.md (EventForm host/category filter, RecurringForm host, EventsPage cancel/restore one-off)
-last_updated: "2026-03-14T19:23:24.326Z"
+stopped_at: Completed 05-06-PLAN.md (hostId/meetupUrl schema wiring and seed categories fix)
+last_updated: "2026-03-14T19:39:37.802Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 23
+  completed_plans: 23
   percent: 82
 ---
 
@@ -65,6 +65,7 @@ Progress: [████████░░] 82%
 | Phase 05-hosts-meetup-workflow-calendar-polish P05 | 1 | 1 tasks | 1 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P03 | 8 | 2 tasks | 5 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P04 | 8 | 2 tasks | 6 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P06 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -175,6 +176,9 @@ Recent decisions affecting current work:
 - [Phase 05-03]: Always show MeetupExportPopover button for DB events (badge shown alongside when URL set) to allow editing/clearing URL at any time
 - [Phase 05-04]: Route category filter is client-side via useState + array filter on categoryId — no API change needed
 - [Phase 05-04]: Cancelled one-off events differentiated from cancelled recurring instances by recurringTemplateId nullability in row builder; one-offs use PATCH /restore, instances use DELETE
+- [Phase 05-06]: pool.query raw SQL with ON CONFLICT ON CONSTRAINT 'categories_name_unique' for reliable seed upsert — Drizzle onConflictDoUpdate column target unreliable on databases created outside migrations
+- [Phase 05-06]: meetupUrl empty string normalized to null in both createEvent and updateEvent — Zod .or(z.literal('')) validates, service converts to null before DB insert
+- [Phase 05-06]: hostId null in updateEvent explicitly clears host assignment (no ?? null guard) — passing null is intentional and valid
 
 ### Pending Todos
 
@@ -212,8 +216,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:23:24.324Z
-Stopped at: Completed 05-04-PLAN.md (EventForm host/category filter, RecurringForm host, EventsPage cancel/restore one-off)
+Last session: 2026-03-14T19:39:37.800Z
+Stopped at: Completed 05-06-PLAN.md (hostId/meetupUrl schema wiring and seed categories fix)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
