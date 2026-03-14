@@ -34,7 +34,7 @@ export function useEvent(id: number) {
 export function useCreateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string; recurringTemplateId?: number }) =>
+    mutationFn: (data: { routeId: number; startDateTime: string; startLocation?: string; endLocation?: string; notes?: string; recurringTemplateId?: number; hostId?: number | null; meetupUrl?: string | null }) =>
       api.post<{ event: Event }>('/api/events', {
         ...data,
         startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z'),
@@ -49,7 +49,7 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: number; version: number; routeId?: number; startDateTime?: string; startLocation?: string; endLocation?: string; notes?: string }) =>
+    mutationFn: ({ id, ...data }: { id: number; version: number; routeId?: number; startDateTime?: string; startLocation?: string; endLocation?: string; notes?: string; hostId?: number | null; meetupUrl?: string | null }) =>
       api.put<{ event: Event }>(`/api/events/${id}`, {
         ...data,
         ...(data.startDateTime ? { startDateTime: new Date(data.startDateTime).toISOString().replace(/\.\d{3}Z$/, 'Z') } : {}),

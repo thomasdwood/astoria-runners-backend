@@ -75,6 +75,7 @@ export function useCreateRecurringTemplate() {
       startLocation?: string;
       endLocation?: string;
       notes?: string;
+      hostId?: number | null;
     }) => api.post<{ template: RecurringTemplate }>('/api/recurring-templates', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring-templates'] });
@@ -102,6 +103,7 @@ export function useUpdateRecurringTemplate() {
       startLocation?: string;
       endLocation?: string;
       notes?: string;
+      hostId?: number | null;
     }) => api.put<{ template: RecurringTemplate }>(`/api/recurring-templates/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring-templates'] });

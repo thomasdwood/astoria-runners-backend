@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRoutes } from '@/hooks/use-routes';
+import { useHosts } from '@/hooks/use-hosts';
+import { useCategories } from '@/hooks/use-categories';
 import { useLocationSuggestions, useDefaultStartLocation } from '@/hooks/use-settings';
 import { useCalendarList } from '@/hooks/use-calendar';
 import { useExcludeRecurringDate } from '@/hooks/use-events';
@@ -37,6 +39,8 @@ const eventSchema = z.object({
   startLocation: z.string().max(200).optional(),
   endLocation: z.string().max(200).optional(),
   notes: z.string().optional(),
+  hostId: z.coerce.number().int().nullable().optional(),
+  meetupUrl: z.string().url('Must be a valid URL').nullable().optional().or(z.literal('')),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -65,6 +69,12 @@ interface EventFormProps {
 
 export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: EventFormProps) {
   const { data: routes } = useRoutes();
+  const { data: hosts } = useHosts();
+  const { data: categories } = useCategories();
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
+  const filteredRoutes = categoryFilter
+    ? routes?.filter((r) => r.categoryId === categoryFilter)
+    : routes;
   const { data: locationSuggestions } = useLocationSuggestions();
   const { data: defaultStartLocation } = useDefaultStartLocation();
   const excludeDate = useExcludeRecurringDate();
@@ -77,6 +87,8 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
         startLocation: event.startLocation ?? undefined,
         endLocation: event.endLocation ?? undefined,
         notes: event.notes ?? '',
+        hostId: event.hostId ?? null,
+        meetupUrl: event.meetupUrl ?? '',
       }
     : instanceDefaults
     ? {
@@ -85,9 +97,13 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
         startLocation: instanceDefaults.startLocation ?? undefined,
         endLocation: instanceDefaults.endLocation ?? undefined,
         notes: instanceDefaults.notes ?? '',
+        hostId: null,
+        meetupUrl: '',
       }
     : {
         startLocation: defaultStartLocation ?? undefined,
+        hostId: null,
+        meetupUrl: '',
       };
 
   const {
@@ -221,6 +237,26 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
     <>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <div className="space-y-2">
+          <Label>Filter routes by category</Label>
+          <Select
+            value={categoryFilter ? String(categoryFilter) : 'all'}
+            onValueChange={(v) => setCategoryFilter(v === 'all' ? null : parseInt(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories?.map((cat) => (
+                <SelectItem key={cat.id} value={String(cat.id)}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
           <Label>Route</Label>
           <Select
             value={routeIdValue ? String(routeIdValue) : ''}
@@ -230,7 +266,7 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
               <SelectValue placeholder="Select a route" />
             </SelectTrigger>
             <SelectContent>
-              {routes?.map((route) => (
+              {filteredRoutes?.map((route) => (
                 <SelectItem key={route.id} value={String(route.id)}>
                   {route.name} ({route.distance} mi)
                 </SelectItem>
@@ -297,6 +333,39 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
         <div className="space-y-2">
           <Label htmlFor="notes">Notes (optional)</Label>
           <Textarea id="notes" {...register('notes')} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hostId">Host (optional)</Label>
+          <Select
+            value={watch('hostId') ? String(watch('hostId')) : 'none'}
+            onValueChange={(v) => setValue('hostId', v === 'none' ? null : parseInt(v))}
+          >
+            <SelectTrigger id="hostId">
+              <SelectValue placeholder="No host assigned" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No host assigned</SelectItem>
+              {hosts?.map((host) => (
+                <SelectItem key={host.id} value={String(host.id)}>
+                  {host.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="meetupUrl">Meetup URL (optional)</Label>
+          <Input
+            id="meetupUrl"
+            type="url"
+            placeholder="https://www.meetup.com/..."
+            {...register('meetupUrl')}
+          />
+          {errors.meetupUrl && (
+            <p className="text-sm text-destructive">{errors.meetupUrl.message}</p>
+          )}
         </div>
 
         <div className="flex justify-end gap-2">

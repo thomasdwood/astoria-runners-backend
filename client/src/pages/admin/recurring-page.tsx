@@ -75,6 +75,7 @@ export function RecurringPage() {
     startLocation?: string;
     endLocation?: string;
     notes?: string;
+    hostId?: number | null;
   }) {
     try {
       if (editingTemplate) {

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRoutes } from '@/hooks/use-routes';
+import { useHosts } from '@/hooks/use-hosts';
 import { useLocationSuggestions } from '@/hooks/use-settings';
 import { useRecurrencePreview } from '@/hooks/use-recurring';
 import { DAY_NAMES, ORDINALS } from '@/lib/constants';
@@ -31,6 +32,7 @@ const recurringSchema = z.object({
   startLocation: z.string().max(200).optional(),
   endLocation: z.string().max(200).optional(),
   notes: z.string().optional(),
+  hostId: z.coerce.number().int().nullable().optional(),
 });
 
 type RecurringFormData = z.infer<typeof recurringSchema>;
@@ -43,6 +45,7 @@ interface RecurringFormProps {
 
 export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFormProps) {
   const { data: routes } = useRoutes();
+  const { data: hosts } = useHosts();
   const { data: locationSuggestions } = useLocationSuggestions();
 
   const {
@@ -64,8 +67,9 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
           startLocation: template.startLocation ?? '',
           endLocation: template.endLocation ?? '',
           notes: template.notes ?? '',
+          hostId: template.hostId ?? null,
         }
-      : { frequency: 'weekly', dayOfWeek: 2, startTime: '18:30', endDate: '' },
+      : { frequency: 'weekly', dayOfWeek: 2, startTime: '18:30', endDate: '', hostId: null },
   });
 
   const routeIdValue = watch('routeId');
@@ -132,6 +136,26 @@ export function RecurringForm({ template, onSubmit, isSubmitting }: RecurringFor
           </SelectContent>
         </Select>
         {errors.routeId && <p className="text-sm text-destructive">{errors.routeId.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="hostId">Default Host (optional)</Label>
+        <Select
+          value={watch('hostId') ? String(watch('hostId')) : 'none'}
+          onValueChange={(v) => setValue('hostId', v === 'none' ? null : parseInt(v))}
+        >
+          <SelectTrigger id="hostId">
+            <SelectValue placeholder="No default host" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No default host</SelectItem>
+            {hosts?.map((host) => (
+              <SelectItem key={host.id} value={String(host.id)}>
+                {host.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
