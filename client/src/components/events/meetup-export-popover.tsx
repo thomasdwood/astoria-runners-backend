@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { api } from '@/lib/api';
 import { useSettings } from '@/hooks/use-settings';
-import { useUpdateMeetupUrl } from '@/hooks/use-events';
+import { useCreateEvent, useUpdateMeetupUrl } from '@/hooks/use-events';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -96,6 +96,7 @@ export function MeetupExportPopover({
   const { data: settings } = useSettings();
   const savedTemplate = settings?.find((s) => s.key === 'meetup_description_template')?.value;
   const updateMeetupUrl = useUpdateMeetupUrl();
+  const createEvent = useCreateEvent();
 
   async function loadDescription(fmt: 'plain' | 'html') {
     if (calendarEvent) {
@@ -140,9 +141,25 @@ export function MeetupExportPopover({
   }
 
   async function handleSaveUrl() {
-    if (!eventId) return;
     try {
-      await updateMeetupUrl.mutateAsync({ id: eventId, meetupUrl: urlInput || null });
+      let targetId = eventId;
+
+      if (!targetId && calendarEvent) {
+        // Materialize the virtual recurring instance on-demand before saving the URL
+        const result = await createEvent.mutateAsync({
+          routeId: calendarEvent.routeId,
+          startDateTime: calendarEvent.startDateTime,
+          startLocation: calendarEvent.startLocation ?? undefined,
+          endLocation: calendarEvent.endLocation ?? undefined,
+          notes: calendarEvent.notes ?? undefined,
+          recurringTemplateId: calendarEvent.recurringTemplateId !== null ? calendarEvent.recurringTemplateId : undefined,
+        });
+        targetId = result.event.id;
+      }
+
+      if (!targetId) return;
+
+      await updateMeetupUrl.mutateAsync({ id: targetId, meetupUrl: urlInput || null });
       setUrlSaved(true);
       toast.success(urlInput ? 'Meetup URL saved' : 'Meetup URL cleared');
       setTimeout(() => setUrlSaved(false), 2000);
@@ -207,7 +224,7 @@ export function MeetupExportPopover({
           )}
         </Button>
 
-        {isDbEvent && (
+        {(isDbEvent || !!calendarEvent) && (
           <div className="space-y-2 pt-1 border-t">
             <Label htmlFor="meetup-url" className="text-sm">
               Meetup URL
@@ -225,7 +242,7 @@ export function MeetupExportPopover({
                 size="sm"
                 className="h-8 shrink-0"
                 onClick={handleSaveUrl}
-                disabled={updateMeetupUrl.isPending}
+                disabled={updateMeetupUrl.isPending || createEvent.isPending}
               >
                 {urlSaved ? <Check className="h-3 w-3" /> : 'Save'}
               </Button>
