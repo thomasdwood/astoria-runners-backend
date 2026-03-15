@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-06-PLAN.md (hostId/meetupUrl schema wiring and seed categories fix)
-last_updated: "2026-03-14T19:43:43.082Z"
+stopped_at: Completed 05-07-PLAN.md (category filter prepopulation fix)
+last_updated: "2026-03-15T01:07:29.321Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 6
-  completed_phases: 6
-  total_plans: 23
-  completed_plans: 23
+  completed_phases: 5
+  total_plans: 25
+  completed_plans: 24
   percent: 82
 ---
 
@@ -66,6 +66,7 @@ Progress: [████████░░] 82%
 | Phase 05-hosts-meetup-workflow-calendar-polish P03 | 8 | 2 tasks | 5 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P04 | 8 | 2 tasks | 6 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P06 | 3 | 3 tasks | 3 files |
+| Phase 05-hosts-meetup-workflow-calendar-polish P07 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,7 @@ Recent decisions affecting current work:
 - [Phase 05-06]: pool.query raw SQL with ON CONFLICT ON CONSTRAINT 'categories_name_unique' for reliable seed upsert — Drizzle onConflictDoUpdate column target unreliable on databases created outside migrations
 - [Phase 05-06]: meetupUrl empty string normalized to null in both createEvent and updateEvent — Zod .or(z.literal('')) validates, service converts to null before DB insert
 - [Phase 05-06]: hostId null in updateEvent explicitly clears host assignment (no ?? null guard) — passing null is intentional and valid
+- [Phase 05-07]: useState initializer reads event?.route?.categoryId ?? null to seed category filter on edit
 
 ### Pending Todos
 
@@ -216,8 +218,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:39:37.800Z
-Stopped at: Completed 05-06-PLAN.md (hostId/meetupUrl schema wiring and seed categories fix)
+Last session: 2026-03-15T01:07:29.319Z
+Stopped at: Completed 05-07-PLAN.md (category filter prepopulation fix)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
