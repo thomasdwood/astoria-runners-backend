@@ -71,7 +71,7 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
   const { data: routes } = useRoutes();
   const { data: hosts } = useHosts();
   const { data: categories } = useCategories();
-  const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<number | null>(event?.route?.categoryId ?? null);
   const filteredRoutes = categoryFilter
     ? routes?.filter((r) => r.categoryId === categoryFilter)
     : routes;
