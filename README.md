@@ -103,10 +103,10 @@ npm run db:seed
 ### 5. Start the Application
 
 ```bash
-npm run dev
+npm run dev:all
 ```
 
-The app will start at **http://localhost:3000**
+This starts both the API server (port 3000) and the Vite frontend. Open **http://localhost:5173**
 
 ## Demo Accounts
 
@@ -173,7 +173,8 @@ DELETE /api/recurring-templates/:id       Delete template
 ## Available Scripts
 
 ```bash
-npm run dev          # Start development server with hot reload
+npm run dev:all      # Start API + Vite frontend concurrently (use this for development)
+npm run dev          # Start API server only (serves stale static files — avoid)
 npm run build        # Compile TypeScript to JavaScript
 npm run db:generate  # Generate migration files from schema changes
 npm run db:migrate   # Run migrations
@@ -256,10 +257,12 @@ SELECT * FROM events;
 
 ### Port Already in Use
 
-If port 3000 is taken, change `PORT` in `.env`:
+If port 3000 (API) or 5173 (frontend) is taken, change `PORT` in `.env` for the API:
 ```env
 PORT=3001
 ```
+
+The Vite dev server port can be changed in `client/vite.config.ts`.
 
 ### Database Connection Failed
 
@@ -340,4 +343,3 @@ ISC
 ## Questions?
 
 Built with the Get Shit Done (GSD) workflow.
-Project completed: 2026-02-13
