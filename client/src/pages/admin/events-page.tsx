@@ -159,7 +159,8 @@ export function EventsPage() {
           ...data,
           recurringTemplateId: editingInstance.recurringTemplateId !== null ? editingInstance.recurringTemplateId : undefined,
         });
-        toast.success('Instance saved as one-off event');
+        const instanceDateLabel = format(new Date(editingInstance.startDateTime), 'MMM d');
+        toast.success(`Changes saved for ${instanceDateLabel}`);
       } else {
         await createEvent.mutateAsync(data);
         toast.success('Event created');
@@ -431,7 +432,7 @@ export function EventsPage() {
                         Exception
                       </Badge>
                     ) : (
-                      <span className="text-muted-foreground text-xs">One-off</span>
+                      <span className="text-muted-foreground text-xs">Single event</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -512,7 +513,7 @@ export function EventsPage() {
               {editingEvent
                 ? 'Update event details.'
                 : editingInstance
-                ? 'Saving will create a one-off exception for this instance.'
+                ? 'Changes will only apply to this date. Future instances won\'t be affected.'
                 : 'Schedule a new event.'}
             </DialogDescription>
           </DialogHeader>

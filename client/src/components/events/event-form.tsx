@@ -370,9 +370,14 @@ export function EventForm({ event, instanceDefaults, onSubmit, isSubmitting }: E
 
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={isSubmitting || excludeDate.isPending}>
-            {isSubmitting ? 'Saving...' : event ? 'Update Event' : instanceDefaults ? 'Save as One-off' : 'Create Event'}
+            {isSubmitting ? 'Saving...' : event ? 'Update Event' : instanceDefaults ? 'Save Changes' : 'Create Event'}
           </Button>
         </div>
+        {instanceDefaults && (
+          <p className="text-xs text-muted-foreground text-right">
+            Changes will only apply to {format(new Date(instanceDefaults.startDateTime!), 'MMM d')}. Future instances won&apos;t be affected.
+          </p>
+        )}
       </form>
 
       {/* Conflict detection dialog */}
