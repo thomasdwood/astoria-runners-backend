@@ -113,6 +113,7 @@ export interface CalendarEvent {
   hostName: string | null;
   meetupUrl: string | null;
   stravaUrl: string | null;
+  distance: number | null;
 }
 
 export interface CalendarDay {

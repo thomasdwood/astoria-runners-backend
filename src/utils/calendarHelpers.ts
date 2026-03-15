@@ -33,6 +33,7 @@ export interface CalendarEvent {
   hostName: string | null;
   meetupUrl: string | null;
   stravaUrl: string | null;
+  distance: number | null;
 }
 
 /**
@@ -86,6 +87,7 @@ export function formatEventForCalendar(
     hostName: event.host?.name ?? null,
     meetupUrl: event.meetupUrl ?? null,
     stravaUrl: event.route?.stravaUrl ?? null,
+    distance: event.route?.distance != null ? Number(event.route.distance) : null,
   };
 }
 
