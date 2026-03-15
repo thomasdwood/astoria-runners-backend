@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-01-PLAN.md (Settings allowlist and per-key Zod validation)
-last_updated: "2026-03-15T01:54:07.699Z"
+stopped_at: "Completed 06-02-PLAN.md (input validation hardening: notes max(2000) + isNaN||id<=0 guards)"
+last_updated: "2026-03-15T01:54:14.456Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 7
@@ -189,6 +189,8 @@ Recent decisions affecting current work:
 - [Phase 06-01]: Settings validation extracted to src/validation/settings.ts (separate from route) to avoid circular deps and allow isolated testing
 - [Phase 06-01]: EDITABLE_SETTINGS allowlist is a hardcoded const (not DB-fetched) per SECURITY.md requirement
 - [Phase 06-01]: z.enum cast as [string, ...string[]] satisfies ZodType<string> constraint for settingValueSchemas Record type
+- [Phase 06-02]: isNaN(id) || id <= 0 is the canonical ID guard — bare isNaN(id) is now forbidden in route files per SECURITY.md
+- [Phase 06-02]: notes max 2000 chars: .max(2000) placed before .nullable().optional() so null bypasses length check correctly
 
 ### Pending Todos
 
@@ -227,8 +229,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T01:53:59.196Z
-Stopped at: Completed 06-01-PLAN.md (Settings allowlist and per-key Zod validation)
+Last session: 2026-03-15T01:54:14.454Z
+Stopped at: Completed 06-02-PLAN.md (input validation hardening: notes max(2000) + isNaN||id<=0 guards)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
