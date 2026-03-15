@@ -46,7 +46,7 @@ function generateClientSideDescription(ce: CalendarEvent, templateOverride?: str
 
     return applyTemplate(templateOverride, {
       routeName: ce.title,
-      distance: '',
+      distance: ce.distance != null ? String(ce.distance) : '',
       startLocation: ce.startLocation ?? '',
       endLocation: ce.endLocation ?? '',
       host: ce.hostName ?? '',
