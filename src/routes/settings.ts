@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import * as settingsService from '../services/settingsService.js';
+import { EDITABLE_SETTINGS, EditableSettingKey, settingValueSchemas } from '../validation/settings.js';
 
 const router = Router();
 
@@ -39,18 +40,23 @@ router.put(
   asyncHandler(async (req, res) => {
     const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
 
-    if (!key) {
-      res.status(400).json({ error: 'Setting key is required' });
+    if (!EDITABLE_SETTINGS.includes(key as EditableSettingKey)) {
+      res.status(400).json({ error: 'Unknown setting key' });
       return;
     }
 
-    const { value } = req.body;
-    if (typeof value !== 'string') {
-      res.status(422).json({ error: 'Value must be a string' });
+    const valueSchema = settingValueSchemas[key as EditableSettingKey];
+    const parsed = valueSchema.safeParse(req.body.value);
+
+    if (!parsed.success) {
+      res.status(422).json({
+        error: 'Validation failed',
+        details: parsed.error.issues.map((e) => ({ field: 'value', message: e.message })),
+      });
       return;
     }
 
-    const setting = await settingsService.upsertSetting(key, value);
+    const setting = await settingsService.upsertSetting(key, parsed.data);
     res.status(200).json({ setting });
   })
 );
