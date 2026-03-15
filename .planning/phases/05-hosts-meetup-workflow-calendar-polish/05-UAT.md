@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 05-hosts-meetup-workflow-calendar-polish
-source: 05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md, 05-05-SUMMARY.md, 05-06-SUMMARY.md
+source: 05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md, 05-05-SUMMARY.md, 05-06-SUMMARY.md, 05-07-SUMMARY.md, 05-08-SUMMARY.md
 started: 2026-03-14T00:00:00Z
-updated: 2026-03-14T00:00:00Z
+updated: 2026-03-15T00:00:00Z
 ---
 
 ## Current Test
@@ -34,7 +34,7 @@ severity: minor
 ### 5. EventForm Category Filter + Host Selector
 expected: When creating or editing a one-off event, the form should have a category dropdown above the route selector that filters available routes by category. There should also be a host selector dropdown. Selecting a category filters the route list; selecting a host associates that host with the event.
 result: issue
-reported: "When editing an existing event, the category filter doesn't prepopulate with the current route's category — user has to reselect it even though the route already implies a category. Also, events generated from recurring templates should default the host field to the template's host (overridable per-instance)."
+reported: "When editing an existing event, the category filter doesn't prepopulate with the current route's category — user has to reselect it even though the route already implies a category. (Recurring template host defaulting confirmed working.)"
 severity: major
 
 ### 6. RecurringForm Host Selector
@@ -68,13 +68,31 @@ skipped: 0
   reason: "User reported: button says 'Save as one off' and toast says 'Save as one off event' — exposes internal concept (exception materialization) instead of communicating user intent. Should instead say 'Save URL' with a contextual note 'This will only apply to [date]. Future instances won't be affected.' This pattern applies to any per-instance edit, not just Meetup URL."
   severity: minor
   test: 4
-  artifacts: []
-  missing: []
+  root_cause: "Wording leaks from multiple places: (1) event-form.tsx:373 submit button says 'Save as One-off' for instance edits; (2) events-page.tsx:162 toast says 'Instance saved as one-off event'; (3) events-page.tsx:515 DialogDescription says 'Saving will create a one-off exception'; (4) events-page.tsx:434 Type column shows 'One-off'. Additionally, MeetupExportPopover hides URL-save entirely for virtual recurring instances (isDbEvent gate) — saving a Meetup URL on a recurring calendar event is not possible at all; the popover needs on-demand instance materialization."
+  artifacts:
+    - path: "client/src/components/events/event-form.tsx"
+      issue: "Line 373: submit button label 'Save as One-off' for instance edits"
+    - path: "client/src/pages/admin/events-page.tsx"
+      issue: "Line 162: toast 'Instance saved as one-off event'; Line 515: DialogDescription exposes exception concept; Line 434: Type column label 'One-off'"
+    - path: "client/src/components/events/meetup-export-popover.tsx"
+      issue: "Lines 154, 210-234: URL-save section hidden for virtual recurring instances — feature path missing, not just a relabel"
+  missing:
+    - "event-form.tsx:373 — change 'Save as One-off' to 'Save Changes'; add scope note below button for instance edits: 'This will only apply to [date]. Future instances won't be affected.'"
+    - "events-page.tsx:162 — change toast to 'Changes saved for [date]'"
+    - "events-page.tsx:515 — change DialogDescription to 'Changes will only apply to this date. Future instances won't be affected.'"
+    - "events-page.tsx:434 — change Type column from 'One-off' to 'Single event'"
+    - "meetup-export-popover.tsx — add support for saving URL on virtual recurring instances (materialize on-demand then save URL)"
+  debug_session: ".planning/debug/meetup-popover-one-off-wording.md"
 
-- truth: "Category filter prepopulates with the current route's category when editing an existing event; events from recurring templates inherit the template's default host (overridable)"
+- truth: "Category filter prepopulates with the current route's category when editing an existing event"
   status: failed
-  reason: "User reported: category filter doesn't prepopulate when editing an event (user must reselect even though route implies a category); events created from recurring templates should default host to the template's host"
+  reason: "User reported: category filter doesn't prepopulate when editing an event — user must reselect the category even though the existing route already implies one. (Note: recurring template host defaulting to event host confirmed working — not an issue.)"
   severity: major
   test: 5
-  artifacts: []
-  missing: []
+  root_cause: "categoryFilter useState in event-form.tsx is always initialized to null (line 74). When editing, event.route.categoryId is fully available on the event prop but never used to seed the initial state. One-line fix: useState<number | null>(event?.route?.categoryId ?? null)"
+  artifacts:
+    - path: "client/src/components/events/event-form.tsx"
+      issue: "Line 74: useState<number | null>(null) ignores event?.route?.categoryId on initialization"
+  missing:
+    - "Change useState<number | null>(null) to useState<number | null>(event?.route?.categoryId ?? null) on line 74"
+  debug_session: ".planning/debug/event-form-category-host-defaults.md"
