@@ -131,13 +131,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXPORT-02 | Phase 7 | Complete |
 | EXPORT-03 | Phase 4 | Complete |
 | EXPORT-04 | Phase 5 | Complete |
+| SEC-01 | Phase 6 | Complete |
+| SEC-02 | Phase 6 | Complete |
+| SEC-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total (21 original + SEC-01/02/03 from Phase 6)
 - Mapped to phases: 23
-- Complete: 22 | Pending: 1 (EXPORT-02 → Phase 7)
+- Complete: 23 | Pending: 0
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after roadmap creation*
+*Last updated: 2026-03-15 after Phase 8 documentation cleanup*
