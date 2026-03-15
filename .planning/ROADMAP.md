@@ -143,6 +143,18 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 4. Integrations & Export | 3/3 | ✓ Complete | 2026-02-24 |
 | 5. Hosts, Meetup Workflow & Calendar Polish | 8/8 | Complete   | 2026-03-15 |
 
+### Phase 6: Security hardening: authorization, CSRF protection, and input validation
+
+**Goal:** Close known security gaps: settings endpoint key allowlist + per-key value constraints (P0), notes field max length on events/templates (SEC-02), and document intentional CSRF posture + single-organizer authorization model (SEC-03).
+**Requirements**: SEC-01, SEC-02, SEC-03
+**Depends on:** Phase 5
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Settings endpoint hardening: EDITABLE_SETTINGS allowlist + per-key Zod schemas
+- [ ] 06-02-PLAN.md — Input validation gaps: notes max(2000) on 4 schemas, id <= 0 guards across 5 route files
+- [ ] 06-03-PLAN.md — CSRF posture documentation: session.ts comment + SECURITY.md updates
+
 ---
 *Roadmap created: 2026-02-12*
 *Last updated: 2026-02-13*
