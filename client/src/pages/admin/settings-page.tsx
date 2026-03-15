@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/use-categories';
-import { useHosts, useCreateHost, useDeleteHost } from '@/hooks/use-hosts';
+import { useHosts, useCreateHost, useUpdateHost, useDeleteHost } from '@/hooks/use-hosts';
 import { useSettings, useUpdateSetting } from '@/hooks/use-settings';
 import { CategoryForm } from '@/components/categories/category-form';
 import { PageHeader } from '@/components/shared/page-header';
@@ -48,6 +48,7 @@ export function SettingsPage() {
 
   const { data: hosts, isLoading: hostsLoading } = useHosts();
   const createHost = useCreateHost();
+  const updateHost = useUpdateHost();
   const deleteHost = useDeleteHost();
 
   const { data: settings, isLoading: settingsLoading } = useSettings();
@@ -69,6 +70,11 @@ export function SettingsPage() {
   const [hostNameInput, setHostNameInput] = useState('');
   const [hostEmailInput, setHostEmailInput] = useState('');
   const [deleteHostTarget, setDeleteHostTarget] = useState<Host | undefined>();
+
+  const [editHostDialogOpen, setEditHostDialogOpen] = useState(false);
+  const [editingHost, setEditingHost] = useState<Host | undefined>();
+  const [editHostNameInput, setEditHostNameInput] = useState('');
+  const [editHostEmailInput, setEditHostEmailInput] = useState('');
 
   const [templateInput, setTemplateInput] = useState('');
   const [templateInitialized, setTemplateInitialized] = useState(false);
@@ -163,6 +169,30 @@ export function SettingsPage() {
       toast.error('Failed to delete host');
     }
     setDeleteHostTarget(undefined);
+  }
+
+  function openEditHost(host: Host) {
+    setEditingHost(host);
+    setEditHostNameInput(host.name);
+    setEditHostEmailInput(host.email ?? '');
+    setEditHostDialogOpen(true);
+  }
+
+  async function handleUpdateHost() {
+    if (!editingHost || !editHostNameInput.trim()) return;
+    try {
+      await updateHost.mutateAsync({
+        id: editingHost.id,
+        data: {
+          name: editHostNameInput.trim(),
+          email: editHostEmailInput.trim() || null,
+        },
+      });
+      toast.success('Host updated');
+      setEditHostDialogOpen(false);
+    } catch {
+      toast.error('Failed to update host');
+    }
   }
 
   async function handleSaveTemplate() {
@@ -285,7 +315,7 @@ export function SettingsPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="w-[80px]">Actions</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -294,13 +324,18 @@ export function SettingsPage() {
                     <TableCell className="font-medium">{host.name}</TableCell>
                     <TableCell className="text-muted-foreground">{host.email ?? '—'}</TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteHostTarget(host)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEditHost(host)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteHostTarget(host)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -487,6 +522,55 @@ export function SettingsPage() {
                 {createHost.isPending ? 'Adding...' : 'Add Host'}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Host Dialog */}
+      <Dialog open={editHostDialogOpen} onOpenChange={(open) => {
+        setEditHostDialogOpen(open);
+        if (!open) {
+          setEditHostNameInput('');
+          setEditHostEmailInput('');
+          setEditingHost(undefined);
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Host</DialogTitle>
+            <DialogDescription>Update the host's name and email.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="editHostName">Name</Label>
+              <Input
+                id="editHostName"
+                value={editHostNameInput}
+                onChange={(e) => setEditHostNameInput(e.target.value)}
+                placeholder="Host name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editHostEmail">Email (optional)</Label>
+              <Input
+                id="editHostEmail"
+                type="email"
+                value={editHostEmailInput}
+                onChange={(e) => setEditHostEmailInput(e.target.value)}
+                placeholder="host@example.com"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setEditHostDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateHost}
+              disabled={!editHostNameInput.trim() || updateHost.isPending}
+            >
+              {updateHost.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
