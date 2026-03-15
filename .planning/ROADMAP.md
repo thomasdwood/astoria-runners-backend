@@ -141,7 +141,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Event Scheduling & Public Calendar | 3/3 | ✓ Complete | 2026-02-13 |
 | 03.1. Refinements & Missing Features | 6/6 | ✓ Complete | 2026-02-24 |
 | 4. Integrations & Export | 3/3 | ✓ Complete | 2026-02-24 |
-| 5. Hosts, Meetup Workflow & Calendar Polish | 8/8 | Complete   | 2026-03-15 |
+| 5. Hosts, Meetup Workflow & Calendar Polish | 8/8 | ✓ Complete | 2026-03-15 |
+| 6. Security Hardening | 3/3 | ✓ Complete | 2026-03-15 |
+| 7. Feature gap closure | 0/2 | Pending | — |
+| 8. Documentation cleanup | 0/1 | Pending | — |
 
 ### Phase 6: Security hardening: authorization, CSRF protection, and input validation
 
@@ -155,6 +158,25 @@ Plans:
 - [ ] 06-02-PLAN.md — Input validation gaps: notes max(2000) on 4 schemas, id <= 0 guards across 5 route files
 - [ ] 06-03-PLAN.md — CSRF posture documentation: session.ts comment + SECURITY.md updates
 
+### Phase 7: Feature gap closure — host edit UI and Meetup distance fix
+**Goal:** Close two functional gaps identified in v1.0 audit: surface host editing in the admin settings UI (wiring the existing `useUpdateHost` hook and `PUT /api/hosts/:id` endpoint), and fix `{{distance}}` rendering blank in the client-side Meetup description template for virtual recurring instances.
+**Requirements:** EXPORT-02
+**Gap Closure:** Closes EXPORT-02 requirement gap, `useUpdateHost` integration gap, Flow 4 partial
+**Depends on:** Phase 6
+
+Plans:
+- [ ] 07-01-PLAN.md — Add `distance` to `CalendarEvent` type and calendar query; pass through to `generateClientSideDescription()` in meetup-export-popover.tsx
+- [ ] 07-02-PLAN.md — Add host edit form to settings page; wire `useUpdateHost` hook to edit UI
+
+### Phase 8: Documentation cleanup — requirements traceability and audit housekeeping
+**Goal:** Update 14 stale REQUIREMENTS.md traceability checkboxes (AUTH/ROUTE/EVENT/CAL requirements marked `[ ] Pending` but fully implemented and verified), fix traceability table statuses, and update coverage count.
+**Requirements:** none (documentation only)
+**Gap Closure:** Closes tech debt — stale traceability table from v1.0 audit
+**Depends on:** Phase 7
+
+Plans:
+- [ ] 08-01-PLAN.md — Update REQUIREMENTS.md: mark 14 stale requirements complete, fix traceability table statuses, update coverage count
+
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-13*
+*Last updated: 2026-03-15*

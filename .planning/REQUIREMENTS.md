@@ -9,32 +9,32 @@ Requirements for initial proof of concept. Each maps to roadmap phases.
 
 ### Route Management
 
-- [ ] **ROUTE-01**: Organizer can create route with name, distance, category, and end location
-- [ ] **ROUTE-02**: Organizer can edit existing routes
-- [ ] **ROUTE-03**: Organizer can delete routes
-- [ ] **ROUTE-04**: Organizer can view list of all routes with filtering by category
-- [ ] **ROUTE-05**: Routes support categories: Brewery Run, Coffee Run, Brunch Run, Weekend
+- [x] **ROUTE-01**: Organizer can create route with name, distance, category, and end location
+- [x] **ROUTE-02**: Organizer can edit existing routes
+- [x] **ROUTE-03**: Organizer can delete routes
+- [x] **ROUTE-04**: Organizer can view list of all routes with filtering by category
+- [x] **ROUTE-05**: Routes support categories: Brewery Run, Coffee Run, Brunch Run, Weekend
 
 ### Event Scheduling
 
-- [ ] **EVENT-01**: Organizer can create event with date, time, route selection, notes, and end location
-- [ ] **EVENT-02**: Organizer can edit existing events
-- [ ] **EVENT-03**: Organizer can delete events
-- [ ] **EVENT-04**: Organizer can create recurring event template for weekly repeats
-- [ ] **EVENT-05**: System automatically generates individual event instances from recurring template
-- [ ] **EVENT-06**: Organizer can filter events by category (Brewery, Coffee, Brunch, Weekend)
+- [x] **EVENT-01**: Organizer can create event with date, time, route selection, notes, and end location
+- [x] **EVENT-02**: Organizer can edit existing events
+- [x] **EVENT-03**: Organizer can delete events
+- [x] **EVENT-04**: Organizer can create recurring event template for weekly repeats
+- [x] **EVENT-05**: System automatically generates individual event instances from recurring template
+- [x] **EVENT-06**: Organizer can filter events by category (Brewery, Coffee, Brunch, Weekend)
 
 ### Calendar Views
 
-- [ ] **CAL-01**: Public user can view events in month calendar format
-- [ ] **CAL-02**: Public user can view events in chronological list format
-- [ ] **CAL-03**: Calendar displays event date, time, route name, and category for each event
+- [x] **CAL-01**: Public user can view events in month calendar format
+- [x] **CAL-02**: Public user can view events in chronological list format
+- [x] **CAL-03**: Calendar displays event date, time, route name, and category for each event
 
 ### Authentication
 
-- [ ] **AUTH-01**: Organizer can log in with email and password
-- [ ] **AUTH-02**: Organizer can log out from any page
-- [ ] **AUTH-03**: Public users can view calendar without authentication or account creation
+- [x] **AUTH-01**: Organizer can log in with email and password
+- [x] **AUTH-02**: Organizer can log out from any page
+- [x] **AUTH-03**: Public users can view calendar without authentication or account creation
 
 ### Integrations
 
@@ -45,7 +45,7 @@ Requirements for initial proof of concept. Each maps to roadmap phases.
 ### Meetup Export
 
 - [x] **EXPORT-01**: System generates Meetup event description from customizable template
-- [x] **EXPORT-02**: Template supports variables: distance, route name, category, end location, Strava route link
+- [ ] **EXPORT-02**: Template supports variables: distance, route name, category, end location, Strava route link
 - [x] **EXPORT-03**: Organizer can copy generated description to clipboard with one click
 - [x] **EXPORT-04**: Organizer can mark event as "posted to Meetup" via checkbox
 
@@ -107,34 +107,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| ROUTE-01 | Phase 2 | Pending |
-| ROUTE-02 | Phase 2 | Pending |
-| ROUTE-03 | Phase 2 | Pending |
-| ROUTE-04 | Phase 2 | Pending |
-| ROUTE-05 | Phase 2 | Pending |
-| EVENT-01 | Phase 3 | Pending |
-| EVENT-02 | Phase 3 | Pending |
-| EVENT-03 | Phase 3 | Pending |
-| EVENT-04 | Phase 3 | Pending |
-| EVENT-05 | Phase 3 | Pending |
-| EVENT-06 | Phase 3 | Pending |
-| CAL-01 | Phase 3 | Pending |
-| CAL-02 | Phase 3 | Pending |
-| CAL-03 | Phase 3 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| ROUTE-01 | Phase 2 | Complete |
+| ROUTE-02 | Phase 2 | Complete |
+| ROUTE-03 | Phase 2 | Complete |
+| ROUTE-04 | Phase 2 | Complete |
+| ROUTE-05 | Phase 2/03.1 | Complete |
+| EVENT-01 | Phase 3 | Complete |
+| EVENT-02 | Phase 3 | Complete |
+| EVENT-03 | Phase 3 | Complete |
+| EVENT-04 | Phase 3/03.1 | Complete |
+| EVENT-05 | Phase 3 | Complete |
+| EVENT-06 | Phase 3 | Complete |
+| CAL-01 | Phase 3 | Complete |
+| CAL-02 | Phase 3 | Complete |
+| CAL-03 | Phase 3 | Complete |
 | INTEG-01 | Phase 4 | Complete |
 | INTEG-02 | Phase 4 | Complete |
 | INTEG-03 | Phase 4 | Complete |
 | EXPORT-01 | Phase 4 | Complete |
-| EXPORT-02 | Phase 4 | Complete |
+| EXPORT-02 | Phase 7 | Pending |
 | EXPORT-03 | Phase 4 | Complete |
-| EXPORT-04 | Phase 4 | Complete |
+| EXPORT-04 | Phase 5 | Complete |
 
 **Coverage:**
-- v1 requirements: 21 total
-- Mapped to phases: 21
+- v1 requirements: 23 total (21 original + SEC-01/02/03 from Phase 6)
+- Mapped to phases: 23
+- Complete: 22 | Pending: 1 (EXPORT-02 → Phase 7)
 - Unmapped: 0 ✓
 
 ---
