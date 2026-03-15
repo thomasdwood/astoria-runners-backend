@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-08-PLAN.md (UX wording fix + Meetup URL for virtual instances)
-last_updated: "2026-03-15T01:11:54.250Z"
+stopped_at: Completed 06-01-PLAN.md (Settings allowlist and per-key Zod validation)
+last_updated: "2026-03-15T01:54:07.699Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 28
+  completed_plans: 27
   percent: 82
 ---
 
@@ -68,6 +68,8 @@ Progress: [████████░░] 82%
 | Phase 05-hosts-meetup-workflow-calendar-polish P06 | 3 | 3 tasks | 3 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P07 | 2 | 1 tasks | 1 files |
 | Phase 05-hosts-meetup-workflow-calendar-polish P08 | 2 | 2 tasks | 3 files |
+| Phase 06-security-hardening-authorization-csrf-protection-and-input-validation P01 | 5 | 2 tasks | 2 files |
+| Phase 06-security-hardening-authorization-csrf-protection-and-input-validation P02 | 1 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -184,6 +186,9 @@ Recent decisions affecting current work:
 - [Phase 05-07]: useState initializer reads event?.route?.categoryId ?? null to seed category filter on edit
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: CalendarEvent has no hostId field, on-demand materialization omits hostId from create payload
 - [Phase 05-hosts-meetup-workflow-calendar-polish]: MeetupExportPopover URL gate expanded from isDbEvent to (isDbEvent || !!calendarEvent) for virtual instance support
+- [Phase 06-01]: Settings validation extracted to src/validation/settings.ts (separate from route) to avoid circular deps and allow isolated testing
+- [Phase 06-01]: EDITABLE_SETTINGS allowlist is a hardcoded const (not DB-fetched) per SECURITY.md requirement
+- [Phase 06-01]: z.enum cast as [string, ...string[]] satisfies ZodType<string> constraint for settingValueSchemas Record type
 
 ### Pending Todos
 
@@ -192,6 +197,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 03.1 inserted after Phase 3: Refinements & Missing Features (INSERTED) — flexible categories, start location, recurring on events page, complex recurring patterns
+- Phase 6 added: Security hardening: authorization, CSRF protection, and input validation
 
 ### Blockers/Concerns
 
@@ -221,8 +227,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T01:08:35.119Z
-Stopped at: Completed 05-08-PLAN.md (UX wording fix + Meetup URL for virtual instances)
+Last session: 2026-03-15T01:53:59.196Z
+Stopped at: Completed 06-01-PLAN.md (Settings allowlist and per-key Zod validation)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 
