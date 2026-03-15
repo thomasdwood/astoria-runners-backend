@@ -143,7 +143,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 4. Integrations & Export | 3/3 | ✓ Complete | 2026-02-24 |
 | 5. Hosts, Meetup Workflow & Calendar Polish | 8/8 | ✓ Complete | 2026-03-15 |
 | 6. Security Hardening | 3/3 | ✓ Complete | 2026-03-15 |
-| 7. Feature gap closure | 0/2 | Pending | — |
+| 7. Feature gap closure | 2/2 | Complete   | 2026-03-15 |
 | 8. Documentation cleanup | 0/1 | Pending | — |
 
 ### Phase 6: Security hardening: authorization, CSRF protection, and input validation

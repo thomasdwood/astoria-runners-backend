@@ -45,7 +45,7 @@ Requirements for initial proof of concept. Each maps to roadmap phases.
 ### Meetup Export
 
 - [x] **EXPORT-01**: System generates Meetup event description from customizable template
-- [ ] **EXPORT-02**: Template supports variables: distance, route name, category, end location, Strava route link
+- [x] **EXPORT-02**: Template supports variables: distance, route name, category, end location, Strava route link
 - [x] **EXPORT-03**: Organizer can copy generated description to clipboard with one click
 - [x] **EXPORT-04**: Organizer can mark event as "posted to Meetup" via checkbox
 
@@ -128,7 +128,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTEG-02 | Phase 4 | Complete |
 | INTEG-03 | Phase 4 | Complete |
 | EXPORT-01 | Phase 4 | Complete |
-| EXPORT-02 | Phase 7 | Pending |
+| EXPORT-02 | Phase 7 | Complete |
 | EXPORT-03 | Phase 4 | Complete |
 | EXPORT-04 | Phase 5 | Complete |
 
