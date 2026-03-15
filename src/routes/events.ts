@@ -74,7 +74,7 @@ router.get(
   validateQuery(meetupDescriptionQuerySchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -101,7 +101,7 @@ router.patch(
   validateBody(updateMeetupUrlSchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -125,7 +125,7 @@ router.patch(
   requireAuth,
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -154,7 +154,7 @@ router.patch(
   requireAuth,
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -182,7 +182,7 @@ router.get(
   '/:id',
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -206,7 +206,7 @@ router.put(
   validateBody(updateEventSchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }
@@ -243,7 +243,7 @@ router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid event ID' });
       return;
     }

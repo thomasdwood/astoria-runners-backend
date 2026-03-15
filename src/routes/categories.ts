@@ -43,7 +43,7 @@ router.put(
   validateBody(updateCategorySchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid category ID' });
       return;
     }
@@ -68,7 +68,7 @@ router.delete(
   requireAuth,
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid category ID' });
       return;
     }

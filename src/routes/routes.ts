@@ -55,7 +55,7 @@ router.get(
   '/:id',
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid route ID' });
       return;
     }
@@ -79,7 +79,7 @@ router.put(
   validateBody(updateRouteSchema),
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid route ID' });
       return;
     }
@@ -120,7 +120,7 @@ router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
     const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
-    if (isNaN(id)) {
+    if (isNaN(id) || id <= 0) {
       res.status(400).json({ error: 'Invalid route ID' });
       return;
     }
