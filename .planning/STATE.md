@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed 07-02-PLAN.md (host edit UI: Pencil button + edit Dialog in settings-page.tsx)"
-last_updated: "2026-03-15T02:27:24.347Z"
+stopped_at: "Completed 08-02-PLAN.md (real routes seed: 47 Astoria Runners routes in seed.ts)"
+last_updated: "2026-03-15T02:36:09.125Z"
 last_activity: 2026-03-14 — Added Phase 5 to roadmap (hosts, meetup URL, description template, calendar polish)
 progress:
   total_phases: 9
-  completed_phases: 8
-  total_plans: 30
-  completed_plans: 30
+  completed_phases: 9
+  total_plans: 31
+  completed_plans: 31
   percent: 82
 ---
 
@@ -73,6 +73,7 @@ Progress: [████████░░] 82%
 | Phase 06-security-hardening-authorization-csrf-protection-and-input-validation P03 | 2 | 2 tasks | 2 files |
 | Phase 07-feature-gap-closure-host-edit-ui-and-meetup-distance-fix P01 | 5 | 2 tasks | 3 files |
 | Phase 07-feature-gap-closure-host-edit-ui-and-meetup-distance-fix P02 | 1 | 2 tasks | 1 files |
+| Phase 08 P02 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -197,6 +198,8 @@ Recent decisions affecting current work:
 - [Phase 06-03]: sameSite: lax is sufficient CSRF mitigation for single-origin app — csrf-csrf tokens intentionally deferred; requireAuth IS ownership check for single-organizer system
 - [Phase 07-01]: String(ce.distance) for Meetup template substitution — Number('6.20') yields 6.2 as JS number, String(6.2) renders '6.2' (no trailing zero) which is the desired display format
 - [Phase 07-02]: Tasks 1 and 2 committed together as single atomic unit — both modify same file; separating would leave broken intermediate state
+- [Phase 08-02]: 47 routes seeded (plan said 46 — actual route_data had 47 entries; all included faithfully)
+- [Phase 08-02]: oneOffEventData updated alongside sampleRoutes route replacement to maintain referential integrity (auto-fix Rule 1)
 
 ### Pending Todos
 
@@ -235,8 +238,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T02:25:04.292Z
-Stopped at: Completed 07-02-PLAN.md (host edit UI: Pencil button + edit Dialog in settings-page.tsx)
+Last session: 2026-03-15T02:36:09.123Z
+Stopped at: Completed 08-02-PLAN.md (real routes seed: 47 Astoria Runners routes in seed.ts)
 Next step: Update README → /gsd:complete-milestone → git push
 Resume file: None
 

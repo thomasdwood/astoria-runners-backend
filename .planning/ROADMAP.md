@@ -176,6 +176,7 @@ Plans:
 
 Plans:
 - [ ] 08-01-PLAN.md — Update REQUIREMENTS.md: mark 14 stale requirements complete, fix traceability table statuses, update coverage count
+- [ ] 08-02-PLAN.md — Replace placeholder seed routes with 46 real routes from xlsx Route Planner (wave 2)
 
 ---
 *Roadmap created: 2026-02-12*
