@@ -148,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 **Goal:** Close known security gaps: settings endpoint key allowlist + per-key value constraints (P0), notes field max length on events/templates (SEC-02), and document intentional CSRF posture + single-organizer authorization model (SEC-03).
 **Requirements**: SEC-01, SEC-02, SEC-03
 **Depends on:** Phase 5
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — Settings endpoint hardening: EDITABLE_SETTINGS allowlist + per-key Zod schemas
