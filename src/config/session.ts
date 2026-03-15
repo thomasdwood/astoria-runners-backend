@@ -33,7 +33,16 @@ export const sessionMiddleware = session({
   cookie: {
     secure: config.nodeEnv === 'production', // HTTPS only in production
     httpOnly: true, // Prevent XSS access
-    sameSite: 'lax', // CSRF protection
+    // CSRF mitigation: sameSite: 'lax' prevents the session cookie from being sent
+    // on cross-origin non-safe requests (POST, PUT, PATCH, DELETE). This is the
+    // standard browser-enforced CSRF defense for single-origin apps.
+    //
+    // csrf-csrf (token-based CSRF) is intentionally NOT used because:
+    //   1. The app is served from a single origin — no cross-origin credentialed requests
+    //   2. The app is not embedded in third-party iframes
+    //
+    // Revisit if CORS policy ever opens to credentialed cross-origin requests.
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 });
